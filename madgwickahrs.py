@@ -23,7 +23,7 @@ from quaternion import Quaternion
 
 
 class MadgwickAHRS:
-    samplePeriod = 0.01
+    samplePeriod = 0.001
     quaternion = Quaternion(1, 0, 0, 0)
     beta = 0.41
 
@@ -135,3 +135,10 @@ class MadgwickAHRS:
         # Integrate to yield quaternion
         q += qdot * self.samplePeriod
         self.quaternion = Quaternion(q / norm(q))  # normalise quaternion
+    
+    def calc_gravity(self):
+        q = self.quaternion
+        gra_x = 2 * (q[1] * q[3] - q[0] * q[2])
+        gra_y = 2 * (q[0] * q[1] + q[2] * q[3])
+        gra_z = q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3]
+        return [gra_x, gra_y, gra_z]
