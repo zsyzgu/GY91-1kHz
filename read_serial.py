@@ -1,9 +1,11 @@
 import serial
 import time
+import madgwickahrs
 
 ser = serial.Serial('COM5', 250000)
 time.sleep(0.1)
 ser.read(ser.in_waiting)
+mad = madgwickahrs.MadgwickAHRS()
 
 start_time = time.time()
 
