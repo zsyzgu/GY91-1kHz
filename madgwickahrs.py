@@ -20,7 +20,7 @@ import warnings
 import numpy as np
 from numpy.linalg import norm
 from quaternion import Quaternion
-
+import math
 
 class MadgwickAHRS:
     samplePeriod = 0.001
@@ -142,3 +142,9 @@ class MadgwickAHRS:
         gra_y = 2 * (q[0] * q[1] + q[2] * q[3])
         gra_z = q[0] * q[0] - q[1] * q[1] - q[2] * q[2] + q[3] * q[3]
         return [gra_x, gra_y, gra_z]
+    
+    def calc_angles(self):
+        q = self.quaternion
+        pitch = math.asin(2 * (q[1] * q[3] - q[0] * q[2]))
+        heading = math.atan2(q[1] * q[2] + q[0] * q[3], 0.5 - q[2] * q[2] - q[3] * q[3])
+        return pitch, heading
