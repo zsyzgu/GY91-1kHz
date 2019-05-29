@@ -99,6 +99,17 @@ class Panel:
             return self.text_next_word()
         self.update_text_inputed(self.text_inputed + word)
         return word
+    
+    def text_add_word(self, str):
+        if (len(self.text_inputed) > 0):
+            self.text_inputed += ' '
+        self.text_inputed += str
+        self.update_text_bar()
+    
+    def text_delete_word(self):
+        if (len(self.text_inputed) > 0):
+            self.text_inputed = ' '.join(self.text_inputed.split(' ')[:-1])
+            self.update_text_bar()
 
     # Candidate bar
 

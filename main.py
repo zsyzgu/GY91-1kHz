@@ -13,6 +13,7 @@ input.get_data()
 cont = contact.Contact()
 pan = panel.Panel()
 pan.show_words()
+pan.redo_phrase()
 entry = entry.Entry(10000)
 
 pitchs = []
@@ -23,6 +24,11 @@ idle = 0
 while True:
     if keyboard.is_pressed('q'):
         break
+    if len(pan.text_inputed) > 0:
+        if keyboard.is_pressed('y'): # Next phrase
+            pan.next_phrase()
+        elif keyboard.is_pressed('n'): # Redo the phrase
+            pan.redo_phrase()
     data = input.get_data() # [t, gx, gy, gz, ax, ay, az, gra_x, gra_y, gra_z, pitch, heading, is_touch]
     nine_axis = data[1 : 10]
     pitch = data[10]
@@ -48,7 +54,11 @@ while True:
             candidates = entry.predict(pitchs, headings)
             pan.update_candidates(candidates)
         else: # Select Candidate
-            print pan.get_selected_candidate()
+            word = pan.get_selected_candidate()
+            if word == '[delete]':
+                pan.text_delete_word()
+            else:
+                pan.text_add_word(word)
             pitchs = []
             headings = []
             pan.clear_candidates_bar()
