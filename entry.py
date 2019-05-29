@@ -9,10 +9,13 @@ class Entry:
     }
     word_number = 3000
     words = []
+    words_freq = []
 
     def __init__(self, word_number = 3000):
         self.word_number = word_number
-        self.words = [str.upper(line.strip().split()[0]) for line in open('lexicon.txt', 'r').readlines()[:word_number]]
+        lines = open('corpus.txt', 'r').readlines()[:word_number]
+        self.words = [str.upper(line.strip().split()[0]) for line in lines]
+        self.words_freq = [int(line.strip().split()[1]) for line in lines]
 
     def calc_scores(self, pitchs, headings):
         scores = []
@@ -21,7 +24,7 @@ class Entry:
             if length != len(pitchs):
                 scores.append(-1e6)
                 continue
-            score = 0
+            score = math.log(self.words_freq[i])
             # Pitch
             # row = 0: mean = -0.4041, std = 0.0615
             # row = 1: mean = -0.7298, std = 0.0608
@@ -41,16 +44,16 @@ class Entry:
                     std = 0.0589
                 else:
                     print 'Row Error'
-                #score += -math.log(std) - 0.5 * ((pitchs[j] - mean) / std) ** 2
-                score += -((pitchs[j] - mean) / std) ** 2
+                score += -math.log(std) - 0.5 * ((pitchs[j] - mean) / std) ** 2
+                #score += -((pitchs[j] - mean) / std) ** 2
             # Heading
             # delta_heading = -0.0544 * delta_cols - 0.0008 (std = 0.05397)
             for j in range(1, length):
                 delta_col = self.layout[self.words[i][j]][0] - self.layout[self.words[i][j - 1]][0]
                 mean = -0.0544 * delta_col - 0.0008
                 std = 0.0540
-                #score += -math.log(std) - 0.5 * ((delta_headings[j] - mean) / std) ** 2
-                score += -((headings[j] - headings[j - 1] - mean) / std) ** 2
+                score += -math.log(std) - 0.5 * ((headings[j] - headings[j - 1] - mean) / std) ** 2
+                #score += -((headings[j] - headings[j - 1] - mean) / std) ** 2
             scores.append(score)
         return scores
     

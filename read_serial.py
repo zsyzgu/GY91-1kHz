@@ -14,7 +14,7 @@ class ReadSerial():
     heading = 0
 
     def __init__(self):
-        self.ser = serial.Serial('COM5', 250000)
+        self.ser = serial.Serial('COM6', 250000)
         time.sleep(1)
         self.ser.read(self.ser.in_waiting)
         self.mad = madgwickahrs.MadgwickAHRS(0.001)

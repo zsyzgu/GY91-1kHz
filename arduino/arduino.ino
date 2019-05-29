@@ -1,3 +1,9 @@
+/*
+ * VDD ---------------------- 3.3V
+ * SDA ----------------------- A4
+ * SCL ----------------------- A5
+ * GND ---------------------- GND
+ */
 #include "MPU9250.h"
 
 MPU9250 mpu = MPU9250();
@@ -48,6 +54,6 @@ void loop() {
   *gy = mpu.gy;
   *gz = mpu.gz;
   Serial.write(buf, 17);
-  updateTouch();
+  //updateTouch();
   while (micros() - (*t) < 1000);
 }
