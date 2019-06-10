@@ -26,7 +26,7 @@ class Contact:
     
     def caln_sequence(self, X):
         X_std = np.std(X)
-        if (abs(X_std) < 0.001):
+        if (math.isnan(X_std) or abs(X_std) < 0.001):
             return None
         X_min = np.min(X)
         X_max = np.max(X)

@@ -54,6 +54,6 @@ void loop() {
   *gy = mpu.gy;
   *gz = mpu.gz;
   Serial.write(buf, 17);
-  //updateTouch();
+  updateTouch();
   while (micros() - (*t) < 1000);
 }

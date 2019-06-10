@@ -5,7 +5,7 @@ import contact
 import panel
 
 input = read_serial.ReadSerial()
-output = open('p.txt', 'w')
+output = open('n_lwq3.txt', 'w')
 
 for i in range(100000):
     if keyboard.is_pressed('q'):
