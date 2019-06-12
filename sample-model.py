@@ -4,15 +4,29 @@ import keyboard
 import contact
 import panel
 import pygame
+import os
+import time
+import sys
+
+if (len(sys.argv) != 3):
+    print '[User] required.'
+    exit()
+name = sys.argv[1]
+trial = 0
+while True:
+    file_name = './data-model/' + name + '_' + str(trial) + '.txt'
+    if not os.path.exists(file_name):
+        break
+    trial += 1
+print 'Block ' + str(trial) + ' begin.'
 
 input = read_serial.ReadSerial()
-output = open('p.txt', 'w')
+output = open(file_name, 'w')
 cont = contact.Contact()
 pan = panel.Panel()
-pan.show_words()
-pan.redo_phrase()
 pygame.mixer.init()  
 pygame.mixer.music.load("prompt.mp3")
+print 'Trial ' + str(pan.phrase_cnt) + ' begin.'
 
 while True:
     if keyboard.is_pressed('q') or pan.phrase_cnt >= 10:
@@ -26,16 +40,18 @@ while True:
         if keyboard.is_pressed('y'): # Next phrase
             pan.next_phrase()
             remark = 'Y'
+            print 'Trial ' + str(pan.phrase_cnt) + ' begin.'
         elif keyboard.is_pressed('n'): # Redo the phrase
             pan.redo_phrase()
             remark = 'N'
+            print 'Trial ' + str(pan.phrase_cnt) + ' begin.'
 
     if (cont.update(data[1 : 10]) == True):
         pygame.mixer.music.play()
         pygame.mixer.music.play()
         remark = pan.text_next_word()
-        print remark
     
     output.write(line + ' ' + remark + '\n')
 
 pan.stop()
+time.sleep(0.5)

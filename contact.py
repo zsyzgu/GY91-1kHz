@@ -16,7 +16,7 @@ class Contact:
     contact_cnt = 0
 
     def __init__(self):
-        self.clf = joblib.load('train_model.m')
+        self.clf = joblib.load('contact_model.m')
 
     def update(self, nine_axis):
         if (len(self.data) >= self.length):
