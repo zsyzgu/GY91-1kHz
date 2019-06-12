@@ -46,9 +46,9 @@ def calc_positive_features(file_name):
     data = parse(file_name)
     last_tap_timestamp = 0
     features = []
-    for i in range(1, len(data)):
+    for i in range(30, len(data) - 20):
         timestamp = int(data[i][0])
-        if (data[i - 1][12] == 0 and data[i][12] == 1 and timestamp - last_tap_timestamp > 50 * 1000):
+        if (data[i - 1][12] == 0 and data[i][12] == 1 and timestamp - last_tap_timestamp >= 100 * 1000):
             last_tap_timestamp = timestamp
             feature = calc_feature(data[i - 30 : i + 20])
             if (feature != None):
@@ -59,7 +59,7 @@ def calc_negative_features(file_name):
     data = parse(file_name)
     features = []
     cnt = 0
-    while cnt < 167:
+    while cnt < 300:
         j = random.randint(0, len(data) - 50) + 30
         feature = calc_feature(data[j - 30 : j + 20])
         if (feature != None):
@@ -67,32 +67,48 @@ def calc_negative_features(file_name):
             cnt += 1
     return features
 
+def get_users(user):
+    users = []
+    if user == '-A':
+        for file in os.listdir('./data-contact/'):
+            name = file.split('_')[0]
+            if name not in users:
+                users.append(name)
+    else:
+        users = user.split('_')
+    return users
+
 if __name__ == "__main__":
     if (len(sys.argv) != 2):
         print 'User name required.'
         exit()
-    user = sys.argv[1]
+    users = get_users(sys.argv[1])
     root = './data-contact/'
 
     X = []
     y = []
-    for trial in range(10):
-        file_name = root + user + '_p' + str(trial) + '.txt'
-        if not os.path.exists(file_name):
-            break
-        positive_features = calc_positive_features(file_name)
-        X.extend(positive_features)
-        y.extend([1] * len(positive_features))
-    print 'Positive samples = ' + str(len(X))
+    positive_samples = 0
+    negative_samples = 0
+    for user in users:
+        for trial in range(10):
+            file_name = root + user + '_p' + str(trial) + '.txt'
+            if not os.path.exists(file_name):
+                break
+            positive_features = calc_positive_features(file_name)
+            X.extend(positive_features)
+            y.extend([1] * len(positive_features))
+            positive_samples += len(positive_features)
 
-    for trial in range(10):
-        file_name = root + user + '_n' + str(trial) + '.txt'
-        if not os.path.exists(file_name):
-            break
-        negative_features = calc_negative_features(file_name)
-        X.extend(negative_features)
-        y.extend([0] * len(negative_features))
-    print 'All samples = ' + str(len(X))
+        for trial in range(10):
+            file_name = root + user + '_n' + str(trial) + '.txt'
+            if not os.path.exists(file_name):
+                break
+            negative_features = calc_negative_features(file_name)
+            X.extend(negative_features)
+            y.extend([0] * len(negative_features))
+            negative_samples += len(negative_features)
+    print 'Positive samples =', positive_samples
+    print 'Negative samples =', negative_samples
 
     clf = SVC(gamma='auto')
     clf.fit(X, y)

@@ -8,7 +8,7 @@ import os
 import time
 import sys
 
-if (len(sys.argv) != 3):
+if (len(sys.argv) != 2):
     print '[User] required.'
     exit()
 name = sys.argv[1]
@@ -18,9 +18,11 @@ while True:
     if not os.path.exists(file_name):
         break
     trial += 1
-print 'Block ' + str(trial) + ' begin.'
 
 input = read_serial.ReadSerial()
+data = input.get_data()
+print 'Block ' + str(trial) + ' begin.'
+
 output = open(file_name, 'w')
 cont = contact.Contact()
 pan = panel.Panel()
