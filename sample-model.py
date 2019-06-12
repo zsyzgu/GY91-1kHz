@@ -6,15 +6,13 @@ import panel
 import pygame
 import os
 import time
-import sys
+import utils
 
-if (len(sys.argv) != 2):
-    print '[User] required.'
-    exit()
-name = sys.argv[1]
+root = './data-model/'
+user = utils.get_users(root)
 trial = 0
 while True:
-    file_name = './data-model/' + name + '_' + str(trial) + '.txt'
+    file_name = root + user + '_' + str(trial) + '.txt'
     if not os.path.exists(file_name):
         break
     trial += 1

@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import entry
+import utils
 import os
 
 def read_data(file_name):
@@ -20,7 +21,7 @@ def read_data(file_name):
             last_col = None
             last_heading = None
             buffer = []
-        elif word != '-':
+        elif word != '-' and word != '#':
             pitch = float(tags[10])
             heading = float(tags[11])
             word = str.upper(tags[-1])
@@ -36,17 +37,20 @@ def read_data(file_name):
     return data
 
 if __name__ == "__main__":
-    layout = entry.Entry.layout
+    root = './data-model/'
+    users = utils.get_users(root)
+
     data = []
-    name = 'gyz'
-    trial = 0
-    while True:
-        file_name = './data-model/' + name + '_' + str(trial) + '.txt'
-        print file_name
-        if not os.path.exists(file_name):
-            break
-        trial += 1
-        data.extend(read_data(file_name))
+    for user in users:
+        layout = entry.Entry.layout
+        trial = 0
+        while True:
+            file_name = root + user + '_' + str(trial) + '.txt'
+            print file_name
+            if not os.path.exists(file_name):
+                break
+            trial += 1
+            data.extend(read_data(file_name))
     data = np.array(data).reshape(-1, 5)
 
     rows = data[:, 0]

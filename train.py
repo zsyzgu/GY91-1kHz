@@ -6,7 +6,7 @@ import random
 import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.externals import joblib
-import sys
+import utils
 import os
 
 def parse(file_name):
@@ -67,23 +67,11 @@ def calc_negative_features(file_name):
             cnt += 1
     return features
 
-def get_users(user):
-    users = []
-    if user == '-A':
-        for file in os.listdir('./data-contact/'):
-            name = file.split('_')[0]
-            if name not in users:
-                users.append(name)
-    else:
-        users = user.split('_')
-    return users
+
 
 if __name__ == "__main__":
-    if (len(sys.argv) != 2):
-        print 'User name required.'
-        exit()
-    users = get_users(sys.argv[1])
     root = './data-contact/'
+    users = utils.get_users(root)
 
     X = []
     y = []

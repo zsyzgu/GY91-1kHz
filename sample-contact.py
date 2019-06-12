@@ -5,14 +5,15 @@ import contact
 import panel
 import os
 import sys
+import time
 
 if (len(sys.argv) != 3):
     print '[User] and [p/n] required.'
     exit()
-name = sys.argv[1] + '_' + sys.argv[2]
+user = sys.argv[1] + '_' + sys.argv[2]
 trial = 0
 while True:
-    file_name = './data-contact/' + name + str(trial) + '.txt'
+    file_name = './data-contact/' + user + str(trial) + '.txt'
     if not os.path.exists(file_name):
         break
     trial += 1
@@ -39,3 +40,5 @@ while True:
         print str(cnt) + ' / ' + str(samples)
         last_tap_timestamp = timestamp
     last_is_touch = is_touch
+
+time.sleep(0.5)

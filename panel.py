@@ -80,8 +80,8 @@ class Panel:
 
     def update_text_bar(self):
         cv2.rectangle(self.image, (0, 0), (10 * self.length, self.length - 1), (0, 0, 0), -1)
-        cv2.putText(self.image, self.text_task, (int(self.length * 0.5), int(self.length * 0.4)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
-        cv2.putText(self.image, self.text_inputed, (int(self.length * 0.5), int(self.length * 0.8)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+        cv2.putText(self.image, self.text_task, (int(self.length * 0.5), int(self.length * 0.4)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
+        cv2.putText(self.image, self.text_inputed, (int(self.length * 0.5), int(self.length * 0.8)), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 1)
         self.updated = True
 
     def update_text_task(self, str):
