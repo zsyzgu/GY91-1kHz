@@ -8,11 +8,13 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.externals import joblib
 
 class Contact:
-    length = 50
+    length = 40
+    time_gap = 50
+    suc_positive_threshold = 10
 
     clf = None
     data = []
-    last_predict = False
+    suc_positive = 0
     contact_cnt = 0
 
     def __init__(self):
@@ -53,10 +55,14 @@ class Contact:
     def is_contact(self):
         result = False
         predict = self.predict()
-        if (predict == True and self.last_predict == True and self.contact_cnt == 0):
-            result = True
-        if (predict == True and self.last_predict == True):
-            self.contact_cnt = self.length
+        if (predict == True):
+            self.suc_positive += 1
+        else:
+            self.suc_positive = 0
+        if (self.suc_positive >= self.suc_positive_threshold):
+            if (self.contact_cnt == 0):
+                result = True
+            self.contact_cnt = self.time_gap
         elif self.contact_cnt > 0:
             self.contact_cnt -= 1
         self.last_predict = predict

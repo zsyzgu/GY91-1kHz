@@ -13,10 +13,12 @@ input.get_data()
 pan = panel.Panel()
 entry = entry.Entry(10000)
 
+fout = open('p.txt', 'w')
 pitchs = []
 headings = []
 select_heading = None
 event = event.Event()
+last_timestamp = 0
 
 while True:
     if keyboard.is_pressed('q'):
@@ -32,6 +34,9 @@ while True:
     nine_axis = data[1 : 10]
     pitch = data[10]
     heading = data[11]
+
+    fout.write(str(timestamp - last_timestamp) + '\n')
+    last_timestamp = timestamp
 
     event_touch_down, event_long_press, event_long_idle = event.get_event(timestamp, nine_axis)
     

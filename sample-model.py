@@ -9,7 +9,7 @@ import time
 import utils
 
 root = './data-model/'
-user = utils.get_users(root)
+user = utils.get_users(root)[0]
 trial = 0
 while True:
     file_name = root + user + '_' + str(trial) + '.txt'

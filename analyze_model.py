@@ -46,9 +46,9 @@ if __name__ == "__main__":
         trial = 0
         while True:
             file_name = root + user + '_' + str(trial) + '.txt'
-            print file_name
             if not os.path.exists(file_name):
                 break
+            print file_name
             trial += 1
             data.extend(read_data(file_name))
     data = np.array(data).reshape(-1, 5)

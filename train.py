@@ -42,32 +42,34 @@ def calc_feature(data):
             return None
     return feature
 
-def calc_positive_features(file_name):
+def calc_features_from_positive(file_name):
     data = parse(file_name)
     last_tap_timestamp = 0
-    features = []
-    for i in range(30, len(data) - 20):
+    positive_features = []
+    negative_features = []
+    for i in range(60, len(data) - 20):
         timestamp = int(data[i][0])
         if (data[i - 1][12] == 0 and data[i][12] == 1 and timestamp - last_tap_timestamp >= 100 * 1000):
             last_tap_timestamp = timestamp
-            feature = calc_feature(data[i - 30 : i + 20])
+            feature = calc_feature(data[i - 20 : i + 20])
             if (feature != None):
-                features.append(feature)
-    return features
+                positive_features.append(feature)
+            feature = calc_feature(data[i - 60 : i - 20])
+            if (feature != None):
+                negative_features.append(feature)
+    return positive_features, negative_features
 
-def calc_negative_features(file_name):
+def calc_features_from_negative(file_name):
     data = parse(file_name)
     features = []
     cnt = 0
-    while cnt < 300:
-        j = random.randint(0, len(data) - 50) + 30
-        feature = calc_feature(data[j - 30 : j + 20])
+    while cnt < 100:
+        j = random.randint(0, len(data) - 20) + 20
+        feature = calc_feature(data[j - 20 : j + 20])
         if (feature != None):
             features.append(feature)
             cnt += 1
     return features
-
-
 
 if __name__ == "__main__":
     root = './data-contact/'
@@ -82,16 +84,19 @@ if __name__ == "__main__":
             file_name = root + user + '_p' + str(trial) + '.txt'
             if not os.path.exists(file_name):
                 break
-            positive_features = calc_positive_features(file_name)
+            positive_features, negative_features = calc_features_from_positive(file_name)
             X.extend(positive_features)
             y.extend([1] * len(positive_features))
             positive_samples += len(positive_features)
+            X.extend(negative_features)
+            y.extend([0] * len(negative_features))
+            negative_samples += len(negative_features)
 
         for trial in range(10):
             file_name = root + user + '_n' + str(trial) + '.txt'
             if not os.path.exists(file_name):
                 break
-            negative_features = calc_negative_features(file_name)
+            negative_features = calc_features_from_negative(file_name)
             X.extend(negative_features)
             y.extend([0] * len(negative_features))
             negative_samples += len(negative_features)
