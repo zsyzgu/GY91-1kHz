@@ -13,7 +13,6 @@ input.get_data()
 entry = entry.Entry(3000)
 pan = panel.Panel(entry)
 
-fout = open('p.txt', 'w')
 pitchs = []
 headings = []
 select_heading = None
@@ -35,7 +34,6 @@ while True:
     pitch = data[10]
     heading = data[11]
 
-    fout.write(str(timestamp - last_timestamp) + '\n')
     last_timestamp = timestamp
 
     event_touch_down, event_long_press, event_long_idle = event.get_event(timestamp, nine_axis)

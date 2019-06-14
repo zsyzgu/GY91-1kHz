@@ -8,9 +8,9 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.externals import joblib
 
 class Contact:
-    length = 40
+    length = 50
     time_gap = 100
-    suc_positive_threshold = 10
+    suc_positive_threshold = 15
 
     clf = None
     data = []
