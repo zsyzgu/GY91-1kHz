@@ -12,7 +12,7 @@ class Panel:
     image = np.zeros((5 * length + 1, 10 * length + 1, 3), np.uint8)
     layout = entry.Entry.layout
     phrase_cnt = 0
-    phrases = [line.strip() for line in open('phrases.txt', 'r').readlines()]
+    phrases = []
     random.shuffle(phrases)
 
     # Keyboard
@@ -27,15 +27,30 @@ class Panel:
     text_task = ''
     text_inputed = ''
 
-    def __init__(self):
+    def __init__(self, entry = None):
         self.running = True
-        thread = threading.Thread(target = self.run)
+        thread = threading.Thread(target = self.update)
         thread.start()
 
+        phrases = [line.strip() for line in open('phrases.txt', 'r').readlines()]
+        if entry == None:
+            self.phrases = phrases
+        else:
+            for phrase in phrases:
+                words = phrase.split()
+                flag = True
+                for word in words:
+                    if str.upper(word) not in entry.words:
+                        flag = False
+                if flag == True:
+                    self.phrases.append(phrase)
+            print 'Phrases number =', len(self.phrases)
+        random.shuffle(self.phrases)
+        
         self.show_keyboard()
         self.redo_phrase()
-    
-    def run(self):
+
+    def update(self):
         cv2.imshow('image', self.image)
         while self.running:
             if self.updated:

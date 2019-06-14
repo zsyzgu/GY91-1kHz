@@ -10,8 +10,8 @@ import event
 
 input = read_serial.ReadSerial()
 input.get_data()
-pan = panel.Panel()
-entry = entry.Entry(10000)
+entry = entry.Entry(3000)
+pan = panel.Panel(entry)
 
 fout = open('p.txt', 'w')
 pitchs = []

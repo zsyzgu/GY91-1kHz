@@ -2,8 +2,11 @@ import numpy as np
 import math
 
 class Entry:
-    row_mean = [-0.4041, -0.7298, -1.0186]
-    row_std = [0.0615, 0.0608, 0.0589]
+    row_mean = [-0.5, -0.8, -1.1]
+    row_std = [0.1, 0.1, 0.1]
+    col_a = -0.05
+    col_b = 0.00
+    col_std = 0.1
     layout = {
         'Q':(0.0, 0), 'W':(1.0, 0), 'E':(2.0, 0), 'R':(3.0, 0), 'T':(4.0, 0), 'Y':(5.0, 0), 'U':(6.0, 0), 'I':(7.0, 0), 'O':(8.0, 0), 'P':(9.0, 0),
         'A':(0.2, 1), 'S':(1.2, 1), 'D':(2.2, 1), 'F':(3.2, 1), 'G':(4.2, 1), 'H':(5.2, 1), 'J':(6.2, 1), 'K':(7.2, 1), 'L':(8.2, 1),
@@ -18,6 +21,20 @@ class Entry:
         lines = open('corpus.txt', 'r').readlines()[:word_number]
         self.words = [str.upper(line.strip().split()[0]) for line in lines]
         self.words_freq = [int(line.strip().split()[1]) for line in lines]
+        self.load_touch_model()
+
+    def load_touch_model(self):
+        lines = [line.strip().split() for line in open('touch_model.m', 'r').readlines()]
+        self.row_mean[0] = float(lines[0][0])
+        self.row_mean[1] = float(lines[1][0])
+        self.row_mean[2] = float(lines[2][0])
+        self.row_std[0] = float(lines[0][1])
+        self.row_std[1] = float(lines[1][1])
+        self.row_std[2] = float(lines[2][1])
+        self.col_a = float(lines[3][0])
+        self.col_b = float(lines[3][1])
+        self.col_std = float(lines[3][2])
+        print 'Touch Model:', lines
 
     def calc_scores(self, pitchs, headings):
         scores = []
@@ -41,8 +58,8 @@ class Entry:
             # delta_heading = -0.0544 * delta_cols - 0.0008 (std = 0.05397)
             for j in range(1, length):
                 delta_col = self.layout[self.words[i][j]][0] - self.layout[self.words[i][j - 1]][0]
-                mean = -0.0544 * delta_col - 0.0008
-                std = 0.0540
+                mean = self.col_a * delta_col + self.col_b
+                std = self.col_std
                 score += -math.log(std) - 0.5 * ((headings[j] - headings[j - 1] - mean) / std) ** 2
                 #score += -((headings[j] - headings[j - 1] - mean) / std) ** 2
             scores.append(score)
