@@ -46,7 +46,7 @@ while True:
 
     last_timestamp = timestamp
 
-    event_touch_down, event_long_press, event_long_idle = event.get_event(timestamp, nine_axis)
+    event_touch_down, event_long_press, event_long_idle = event.get_event(data)
     
     if event_long_press: # Trigger Deletion
         if len(pitchs) <= 1: # Delete the word (if not: delete letters)
