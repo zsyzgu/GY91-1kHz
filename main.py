@@ -53,25 +53,23 @@ while True:
             pan.text_delete_word()
         clear()
     
-    if event_long_idle and len(pitchs) > 0 and pan.selected == None: # Trigger Selection
-        select_heading = heading
-        pan.update_selected(2.5)
+    if event_long_idle and len(pitchs) > 0 and pan.selecting == None: # Trigger Selection
+        pan.start_selection(heading, pitch)
 
-    if pan.selected != None:
-        selected = 2.5 - (heading - select_heading) / 0.1
-        pan.update_selected(selected)
+    if pan.selecting != None: # Maintain Selection
+        pan.update_selection(heading, pitch)
         pan.update_visual_row(None)
 
     if event_touch_down:
-        if pan.selected == None: # Entry Letter
+        if pan.selecting == None: # Entry Letter
             pan.update_visual_row(pitch)
             pitchs.append(pitch)
             headings.append(heading)
             candidates = entry.predict(pitchs, headings)
             pan.update_candidates(candidates)
         else: # Select Candidate
-            word = pan.get_selected_candidate()
+            word = pan.get_selecting_candidate()
             pan.text_add_word(word)
-            clear()
+            clear() # Close Selection
 
 pan.stop()

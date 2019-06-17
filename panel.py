@@ -9,6 +9,7 @@ class Panel:
     running = False
     updated = False
     length = 50 # Pixels of a key
+    hp_queue_length = 21
     image = np.zeros((5 * length + 1, 10 * length + 1, 3), np.uint8)
     layout = entry.Entry.layout
     phrase_cnt = 0
@@ -19,8 +20,12 @@ class Panel:
     visual_row = None
 
     # Candidate bar
+    start_heading = None
+    last_heading = 0
+    last_pitch = 0
+    hp_queue = []
     candidates = None
-    selected = None
+    selecting = None
     candidate_rank = [3, 1, 0, 2, 4]
 
     # Text bar
@@ -147,11 +152,11 @@ class Panel:
 
     def update_candidates_bar(self):
         candidates = self.candidates
-        selected = self.selected
+        selecting = self.selecting
         cv2.rectangle(self.image, (0, self.length), (10 * self.length, 2 * self.length - 1), (0, 0, 0), -1)
-        if selected != None:
-            cv2.rectangle(self.image, (int(selected) * 2 * self.length, self.length), ((int(selected) + 1) * 2 * self.length, 2 * self.length - 1), (64, 64, 64), -1)
-            cv2.line(self.image, (int(selected * 2 * self.length), self.length + 1), (int(selected * 2 * self.length),  2 * self.length - 2), (0, 0, 0), 2)
+        if selecting != None:
+            cv2.rectangle(self.image, (int(selecting) * 2 * self.length, self.length), ((int(selecting) + 1) * 2 * self.length, 2 * self.length - 1), (64, 64, 64), -1)
+            cv2.line(self.image, (int(selecting * 2 * self.length), self.length + 1), (int(selecting * 2 * self.length),  2 * self.length - 2), (0, 0, 0), 2)
         for i in range(5):
             id = self.candidate_rank[i]
             if (id < len(candidates)):
@@ -166,19 +171,39 @@ class Panel:
         self.candidates = candidates
         self.update_candidates_bar()
     
-    def update_selected(self, selected):
-        selected = int(selected * 5) / 5.0 + 0.1
-        if selected != self.selected:
-            self.selected = selected
+    def start_selection(self, heading, pitch):
+        self.start_heading = heading
+        self.last_heading = heading
+        self.last_pitch = heading
+        self.hp_queue = []
+        selecting = 2.5
+        if selecting != self.selecting:
+            self.selecting = selecting
             self.update_candidates_bar()
+
+    def update_selection(self, heading, pitch):
+        if len(self.hp_queue) >= self.hp_queue_length:
+            self.hp_queue.pop(0)
+        self.hp_queue.append(abs(heading - self.last_heading) > abs(pitch - self.last_pitch))
+        if 2 * self.hp_queue.count(True) >= len(self.hp_queue): # Only update when Time(d(heading)>d(pitch))>=11 in the past 21 ms
+            selecting = 2.5 - (heading - self.start_heading) / 0.1
+            selecting = int(selecting * 5) / 5.0 + 0.1
+
+            if selecting != self.selecting:
+                self.selecting = selecting
+                self.update_candidates_bar()
+
+        self.last_heading = heading
+        self.last_pitch = pitch
+
 
     def clear_candidates_bar(self):
         self.candidates = []
-        self.selected = None
+        self.selecting = None
         self.update_candidates_bar()
 
-    def get_selected_candidate(self):
-        select = int(self.selected)
+    def get_selecting_candidate(self):
+        select = int(self.selecting)
         if (0 <= select and select < 5):
             id = self.candidate_rank[select]
             if (id < len(self.candidates)):
