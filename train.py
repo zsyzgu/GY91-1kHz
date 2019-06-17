@@ -47,14 +47,14 @@ def calc_features_from_positive(file_name):
     last_tap_timestamp = 0
     positive_features = []
     negative_features = []
-    for i in range(75, len(data) - 25):
+    for i in range(60, len(data) - 20):
         timestamp = int(data[i][0])
         if (data[i - 1][12] == 0 and data[i][12] == 1 and timestamp - last_tap_timestamp >= 100 * 1000):
             last_tap_timestamp = timestamp
-            feature = calc_feature(data[i - 25 : i + 25])
+            feature = calc_feature(data[i - 20 : i + 20])
             if (feature != None):
                 positive_features.append(feature)
-            feature = calc_feature(data[i - 75 : i - 25])
+            feature = calc_feature(data[i - 60 : i - 20])
             if (feature != None):
                 negative_features.append(feature)
     return positive_features, negative_features
@@ -64,8 +64,8 @@ def calc_features_from_negative(file_name):
     features = []
     cnt = 0
     while cnt < 100:
-        j = random.randint(0, len(data) - 25) + 25
-        feature = calc_feature(data[j - 25 : j + 25])
+        j = random.randint(0, len(data) - 20) + 20
+        feature = calc_feature(data[j - 20 : j + 20])
         if (feature != None):
             features.append(feature)
             cnt += 1

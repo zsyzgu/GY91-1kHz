@@ -79,7 +79,7 @@ def analyze_point_clouds(X, Y, is_row, is_result):
         if is_result == True:
             output.write(str(fit[0]) + ' ' + str(fit[1]) + ' ' + str(np.std(values)) + '\n')
     plt.plot(X_res, Y_res, '.')
-    #plt.show()
+    plt.show()
     return X_res, Y_res
 
 if __name__ == "__main__":

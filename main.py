@@ -19,14 +19,24 @@ select_heading = None
 event = event.Event()
 last_timestamp = 0
 
+def clear():
+    global pitchs
+    global headings
+    global pan
+    pitchs = []
+    headings = []
+    pan.clear_candidates_bar()
+
 while True:
     if keyboard.is_pressed('q'):
         break
     if len(pan.text_inputed) > 0:
         if keyboard.is_pressed('y'): # Next phrase
             pan.next_phrase()
+            clear()
         elif keyboard.is_pressed('n'): # Redo the phrase
             pan.redo_phrase()
+            clear()
     data = input.get_data() # [t, gx, gy, gz, ax, ay, az, gra_x, gra_y, gra_z, pitch, heading, is_touch]
 
     timestamp = data[0]
@@ -41,9 +51,7 @@ while True:
     if event_long_press: # Trigger Deletion
         if len(pitchs) <= 1: # Delete the word (if not: delete letters)
             pan.text_delete_word()
-        pitchs = []
-        headings = []
-        pan.clear_candidates_bar()
+        clear()
     
     if event_long_idle and len(pitchs) > 0 and pan.selected == None: # Trigger Selection
         select_heading = heading
@@ -55,7 +63,7 @@ while True:
         pan.update_visual_row(None)
 
     if event_touch_down:
-        if pan.selected == None: # Entry Word
+        if pan.selected == None: # Entry Letter
             pan.update_visual_row(pitch)
             pitchs.append(pitch)
             headings.append(heading)
@@ -64,8 +72,6 @@ while True:
         else: # Select Candidate
             word = pan.get_selected_candidate()
             pan.text_add_word(word)
-            pitchs = []
-            headings = []
-            pan.clear_candidates_bar()
+            clear()
 
 pan.stop()

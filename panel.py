@@ -44,6 +44,7 @@ class Panel:
                         flag = False
                 if flag == True:
                     self.phrases.append(phrase)
+            print 'Words number =', len(entry.words)
             print 'Phrases number =', len(self.phrases)
         random.shuffle(self.phrases)
         
