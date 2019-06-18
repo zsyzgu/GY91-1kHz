@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import scipy.io as io
 
 class Entry:
     row_mean = [-0.5, -0.8, -1.1]
@@ -15,13 +16,31 @@ class Entry:
     word_number = 3000
     words = []
     words_freq = []
+    use_bigrams = False
+    bigrams = None
+    last_word_id = 0
 
     def __init__(self, word_number = 3000):
         self.word_number = word_number
+        self.load_corpus(word_number)
+        self.load_bigrams(word_number)
+        self.load_touch_model()
+
+    def load_corpus(self, word_number):
         lines = open('corpus.txt', 'r').readlines()[:word_number]
         self.words = [str.upper(line.strip().split()[0]) for line in lines]
         self.words_freq = [int(line.strip().split()[1]) for line in lines]
-        self.load_touch_model()
+    
+    def load_bigrams(self, word_number):
+        if word_number <= 5000:
+            self.use_bigrams = True
+            if word_number <= 3000:
+                self.bigrams = io.loadmat('bigrams-3000')['mat']
+            else:
+                self.bigrams = io.loadmat('bigrams-5000')['mat']
+            print 'Language Model = Bigrams'
+            return
+        print 'Language Model = Unigram'
 
     def load_touch_model(self):
         lines = [line.strip().split() for line in open('touch_model.m', 'r').readlines()]
@@ -35,6 +54,17 @@ class Entry:
         self.col_b = float(lines[3][1])
         self.col_std = float(lines[3][2])
         print 'Touch Model:', lines
+    
+    def update_last_word(self, word):
+        if self.use_bigrams == True:
+            self.last_word_id = 0
+            if word == None:
+                return
+            word = str.upper(word)
+            for i in range(len(self.words)):
+                if word == self.words[i]:
+                    self.last_word_id = i + 1
+                    break
 
     def calc_scores(self, pitchs, headings):
         scores = []
@@ -43,7 +73,12 @@ class Entry:
             if length != len(pitchs):
                 scores.append(-1e6)
                 continue
-            score = math.log(self.words_freq[i])
+            score = 0
+            if self.use_bigrams == False: # Unigram
+                score = math.log(self.words_freq[i])
+            else: # Bigrams
+                score = math.log(self.bigrams[self.last_word_id, i + 1])
+
             # Pitch
             # row = 0: mean = -0.4041, std = 0.0615
             # row = 1: mean = -0.7298, std = 0.0608

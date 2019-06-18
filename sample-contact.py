@@ -6,17 +6,13 @@ import panel
 import os
 import sys
 import time
+import utils
 
 if (len(sys.argv) != 3):
     print '[User] and [p/n] required.'
     exit()
-user = sys.argv[1] + '_' + sys.argv[2]
-trial = 0
-while True:
-    file_name = './data-contact/' + user + str(trial) + '.txt'
-    if not os.path.exists(file_name):
-        break
-    trial += 1
+root = './data-contact/'
+file_name, trial = utils.get_next_file_name(root + sys.argv[1] + '_' + sys.argv[2])
 
 input = read_serial.ReadSerial()
 data = input.get_data()

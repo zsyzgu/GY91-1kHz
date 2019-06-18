@@ -27,12 +27,13 @@ class Event:
         elif timestamp >= self.last_tapping + 80 * 1000:
             self.total_acc_2 += acc_2
         
-        if self.long_event_not_triggered and timestamp - self.last_movement > 400 * 1000:
-            self.long_event_not_triggered = False
-            if self.last_movement - self.last_tapping < 80 * 1000:
-                if self.total_acc_2 <= 2:
+        if self.long_event_not_triggered:
+            if timestamp - self.last_movement > 150 * 1000 and self.last_movement - self.last_tapping < 80 * 1000: # Long Press (200 ms)
+                if self.total_acc_2 <= 1:
                     event_long_press = True
-            else:
+                self.long_event_not_triggered = False
+            elif timestamp - self.last_movement > 300 * 1000 and self.last_movement - self.last_tapping >= 80 * 1000: # Long Idle (400 ms)
                 event_long_idle = True
+                self.long_event_not_triggered = False
         
         return event_touch_down, event_long_press, event_long_idle

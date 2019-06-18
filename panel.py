@@ -1,4 +1,4 @@
-import cv2
+from cv2 import cv2
 import numpy as np
 import threading
 import time
@@ -14,7 +14,7 @@ class Panel:
     layout = entry.Entry.layout
     phrase_cnt = 0
     phrases = []
-    random.shuffle(phrases)
+    entry = None
 
     # Keyboard
     visual_row = None
@@ -37,10 +37,11 @@ class Panel:
         thread = threading.Thread(target = self.update)
         thread.start()
 
-        phrases = [line.strip() for line in open('phrases.txt', 'r').readlines()]
+        phrases = [str.lower(line.strip()) for line in open('phrases.txt', 'r').readlines()]
         if entry == None:
             self.phrases = phrases
         else:
+            self.entry = entry
             for phrase in phrases:
                 words = phrase.split()
                 flag = True
@@ -118,12 +119,16 @@ class Panel:
         self.text_task = self.phrases[self.phrase_cnt]
         self.text_inputed = ''
         self.update_text_bar()
+        if self.entry != None:
+            self.entry.update_last_word(None)
     
     def redo_phrase(self):
         self.text_task = self.phrases
         self.text_task = self.phrases[self.phrase_cnt]
         self.text_inputed = ''
         self.update_text_bar()
+        if self.entry != None:
+            self.entry.update_last_word(None)
     
     def text_next_word(self):
         length = len(self.text_inputed)
@@ -137,16 +142,27 @@ class Panel:
         self.update_text_inputed(self.text_inputed + word)
         return word
     
+    def find_last_word(self): # For bigrams
+        num = len(self.text_inputed.split(' '))
+        tags = self.text_task.split(' ')
+        if 0 <= num - 1 and num - 1 < len(tags):
+            return tags[num - 1]
+        return None
+
     def text_add_word(self, str):
         if (len(self.text_inputed) > 0) and len(str) > 0:
             self.text_inputed += ' '
         self.text_inputed += str
         self.update_text_bar()
+        if self.entry != None:
+            self.entry.update_last_word(self.find_last_word())
     
     def text_delete_word(self):
         if (len(self.text_inputed) > 0):
             self.text_inputed = ' '.join(self.text_inputed.split(' ')[:-1])
             self.update_text_bar()
+        if self.entry != None:
+            self.entry.update_last_word(self.find_last_word())
 
     # Candidate bar
 

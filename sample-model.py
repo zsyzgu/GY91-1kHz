@@ -10,12 +10,7 @@ import utils
 
 root = './data-model/'
 user = utils.get_users(root)[0]
-trial = 0
-while True:
-    file_name = root + user + '_' + str(trial) + '.txt'
-    if not os.path.exists(file_name):
-        break
-    trial += 1
+file_name, trial = utils.get_next_file_name(root + user + '_')
 
 input = read_serial.ReadSerial()
 data = input.get_data()

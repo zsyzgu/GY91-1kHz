@@ -15,3 +15,12 @@ def get_users(root):
     else:
         users = user.split('_')
     return users
+
+def get_next_file_name(prefix):
+    trial = 0
+    while True:
+        file_name = prefix + str(trial) + '.txt'
+        if not os.path.exists(file_name):
+            break
+        trial += 1
+    return file_name, trial

@@ -2,4 +2,8 @@ p.txt
 *.pyc
 data-contact/
 data-model/
+data-main/
 *.m
+bigrams-3000
+bigrams-5000
+*.mat
