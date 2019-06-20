@@ -24,3 +24,14 @@ def get_next_file_name(prefix):
             break
         trial += 1
     return file_name, trial
+
+def get_all_file_name(prefix):
+    trial = 0
+    file_names = []
+    while True:
+        file_name = prefix + str(trial) + '.txt'
+        if not os.path.exists(file_name):
+            break
+        file_names.append(file_name)
+        trial += 1
+    return file_names

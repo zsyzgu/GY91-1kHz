@@ -9,9 +9,9 @@ class Entry:
     col_b = 0.00
     col_std = 0.1
     layout = {
-        'Q':(0.0, 0), 'W':(1.0, 0), 'E':(2.0, 0), 'R':(3.0, 0), 'T':(4.0, 0), 'Y':(5.0, 0), 'U':(6.0, 0), 'I':(7.0, 0), 'O':(8.0, 0), 'P':(9.0, 0),
-        'A':(0.2, 1), 'S':(1.2, 1), 'D':(2.2, 1), 'F':(3.2, 1), 'G':(4.2, 1), 'H':(5.2, 1), 'J':(6.2, 1), 'K':(7.2, 1), 'L':(8.2, 1),
-        'Z':(0.8, 2), 'X':(1.8, 2), 'C':(2.8, 2), 'V':(3.8, 2), 'B':(4.8, 2), 'N':(5.8, 2), 'M':(6.8, 2)
+        'q':(0.0, 0), 'w':(1.0, 0), 'e':(2.0, 0), 'r':(3.0, 0), 't':(4.0, 0), 'y':(5.0, 0), 'u':(6.0, 0), 'i':(7.0, 0), 'o':(8.0, 0), 'p':(9.0, 0),
+        'a':(0.2, 1), 's':(1.2, 1), 'd':(2.2, 1), 'f':(3.2, 1), 'g':(4.2, 1), 'h':(5.2, 1), 'j':(6.2, 1), 'k':(7.2, 1), 'l':(8.2, 1),
+        'z':(0.8, 2), 'x':(1.8, 2), 'c':(2.8, 2), 'v':(3.8, 2), 'b':(4.8, 2), 'n':(5.8, 2), 'm':(6.8, 2)
     }
     word_number = 3000
     words = []
@@ -28,7 +28,7 @@ class Entry:
 
     def load_corpus(self, word_number):
         lines = open('corpus.txt', 'r').readlines()[:word_number]
-        self.words = [str.upper(line.strip().split()[0]) for line in lines]
+        self.words = [str.lower(line.strip().split()[0]) for line in lines]
         self.words_freq = [int(line.strip().split()[1]) for line in lines]
     
     def load_bigrams(self, word_number):
@@ -60,7 +60,7 @@ class Entry:
             self.last_word_id = 0
             if word == None:
                 return
-            word = str.upper(word)
+            word = str.lower(word)
             for i in range(len(self.words)):
                 if word == self.words[i]:
                     self.last_word_id = i + 1

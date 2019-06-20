@@ -15,7 +15,7 @@ class Log:
 
     def log_raw_data(self, data):
         self.timestamp = int(data[0])
-        #self.output.write(' '.join(data) + '\n')
+        self.output.write(' '.join([str(v) for v in data]) + '\n')
 
     def start_phrase(self, task):
         self.output.write(str(self.timestamp) + ' START_PHRASE ' + task + '\n')

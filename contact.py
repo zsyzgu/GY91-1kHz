@@ -9,7 +9,7 @@ from sklearn.externals import joblib
 
 class Contact:
     length = 40
-    time_gap = 80
+    time_gap = 100
     suc_positive_threshold = 10
 
     clf = None

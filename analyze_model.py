@@ -27,7 +27,7 @@ def read_data(file_name):
         elif word != '-' and word != '#':
             pitch = float(tags[10])
             heading = float(tags[11])
-            word = str.upper(tags[-1])
+            word = str.lower(tags[-1])
             curr_col = layout[word][0]
             if last_col != None:
                 row = layout[word][1]
@@ -79,7 +79,7 @@ def analyze_point_clouds(X, Y, is_row, is_result):
         if is_result == True:
             output.write(str(fit[0]) + ' ' + str(fit[1]) + ' ' + str(np.std(values)) + '\n')
     plt.plot(X_res, Y_res, '.')
-    plt.show()
+    #plt.show()
     return X_res, Y_res
 
 if __name__ == "__main__":
@@ -91,14 +91,10 @@ if __name__ == "__main__":
     X_col = []
     Y_col = []
     for user in users:
+        print user
+        file_names = utils.get_all_file_name(root + user + '_')
         data = []
-        trial = 0
-        while True:
-            file_name = root + user + '_' + str(trial) + '.txt'
-            if not os.path.exists(file_name):
-                break
-            print file_name
-            trial += 1
+        for file_name in file_names:
             data.extend(read_data(file_name))
         data = np.array(data).reshape(-1, 5)
 
