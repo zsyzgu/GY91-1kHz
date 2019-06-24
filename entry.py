@@ -3,6 +3,7 @@ import math
 import scipy.io as io
 
 class Entry:
+    MAX_CANDIDATES = 5
     row_mean = [-0.5, -0.8, -1.1]
     row_std = [0.1, 0.1, 0.1]
     col_a = -0.05
@@ -20,10 +21,11 @@ class Entry:
     bigrams = None
     last_word_id = 0
 
-    def __init__(self, word_number = 3000):
+    def __init__(self, word_number = 3000, use_bigrams = True):
         self.word_number = word_number
         self.load_corpus(word_number)
-        self.load_bigrams(word_number)
+        if use_bigrams:
+            self.load_bigrams(word_number)
         self.load_touch_model()
 
     def load_corpus(self, word_number):
@@ -74,37 +76,32 @@ class Entry:
                 scores.append(-1e6)
                 continue
             score = 0
-            if self.use_bigrams == False: # Unigram
+            if self.use_bigrams == False or self.last_word_id == 0: # Unigram
                 score = math.log(self.words_freq[i])
             else: # Bigrams
                 score = math.log(self.bigrams[self.last_word_id, i + 1])
 
             # Pitch
-            # row = 0: mean = -0.4041, std = 0.0615
-            # row = 1: mean = -0.7298, std = 0.0608
-            # row = 2: mean = -1.0186, std = 0.0589
             for j in range(length):
                 row = self.layout[self.words[i][j]][1]
                 mean = self.row_mean[row]
                 std = self.row_std[row]
                 score += -math.log(std) - 0.5 * ((pitchs[j] - mean) / std) ** 2
-                #score += -((pitchs[j] - mean) / std) ** 2
             # Heading
-            # delta_heading = -0.0544 * delta_cols - 0.0008 (std = 0.05397)
             for j in range(1, length):
                 delta_col = self.layout[self.words[i][j]][0] - self.layout[self.words[i][j - 1]][0]
                 mean = self.col_a * delta_col + self.col_b
                 std = self.col_std
-                score += -math.log(std) - 0.5 * ((headings[j] - headings[j - 1] - mean) / std) ** 2
-                #score += -((headings[j] - headings[j - 1] - mean) / std) ** 2
+                #score += -math.log(std) - 0.5 * ((headings[j] - headings[j - 1] - mean) / std) ** 2
+                score += -0.5 * ((headings[j] - headings[j - 1] - mean) / std) ** 2
             scores.append(score)
         return scores
     
-    def predict(self, pitchs, delta_headings):
+    def predict(self, pitchs, headings):
         candidates = []
-        scores = self.calc_scores(pitchs, delta_headings)
+        scores = self.calc_scores(pitchs, headings)
 
-        for i in range(5):
+        for i in range(self.MAX_CANDIDATES):
             id = scores.index(max(scores))
             if (scores[id] <= -1e6):
                 candidates.append('')

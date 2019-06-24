@@ -4,7 +4,7 @@ import numpy as np
 class Event:
     THRESHOLD_touch_down = 25 # duration between touch up judgement and touch down
     THRESHOLD_touch_up = 10 # frames to confirm a touch up event
-    THRESHOLD_long_press = 200 # duration between long press and touch down
+    THRESHOLD_long_press = 300 # duration between long press and touch down
     THRESHOLD_slide_distance = 0.1
 
     cont = contact.Contact()
@@ -31,7 +31,8 @@ class Event:
 
         self.queue[self.queue_tot % self.queue_len] = heading
         self.queue_tot += 1
-        is_slide = heading - self.queue[(self.queue_tot - (timestamp - self.last_tapping) / 1000) % self.queue_len] > self.THRESHOLD_slide_distance
+        duration = (timestamp - self.last_tapping) / 1000
+        is_slide = heading - self.queue[(self.queue_tot - duration) % self.queue_len] > self.THRESHOLD_slide_distance
         
         if self.cont.update(nine_axis):
             self.last_tapping = timestamp

@@ -26,7 +26,7 @@ class HeadingVsPitch:  # Only update selection bar when d(heading)>d(pitch) in t
         self.last_pitch = pitch
 
     def is_heading_significant(self):
-        return 2 * self.cnt > min(self.tot, self.length)
+        return self.cnt > min(self.tot, self.length) * 0.67
 
 class Panel:
     running = False
