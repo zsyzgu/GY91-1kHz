@@ -102,13 +102,15 @@ class Panel:
         self.updated = True
 
     def update_visual_row(self, pitch):
+        r0 = -0.49
+        r1 = -0.78
+        r2 = -1.03
         row = None
         if pitch != None:
-            row_mean = entry.Entry.row_mean
-            if (pitch < row_mean[1]):
-                row = 1 + (pitch - row_mean[1]) / (row_mean[2] - row_mean[1])
+            if (pitch < r1):
+                row = 1 + (pitch - r0) / (r2 - r1)
             else:
-                row = 1 - (pitch - row_mean[1]) / (row_mean[0] - row_mean[1])
+                row = 1 - (pitch - r0) / (r0 - r1)
             row = float(int((row + 1) * 5)) / 5 - 1
             if row < -0.5 or row > 2.5:
                 row = None
@@ -223,7 +225,7 @@ class Panel:
     def update_selection(self, heading, pitch):
         self.heading_vs_pitch.update(heading, pitch)
         if self.heading_vs_pitch.is_heading_significant(): # Only update when d(heading)>d(pitch) in the past 31 ms
-            selecting = 2.5 + (heading - self.start_heading) / self.entry.col_a
+            selecting = 2.5 + (heading - self.start_heading) / self.entry.touch_model.col_a
             selecting = int(selecting * 5) / 5.0 + 0.1
 
             if selecting != self.selecting:

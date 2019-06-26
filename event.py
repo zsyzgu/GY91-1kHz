@@ -2,7 +2,7 @@ import contact
 import numpy as np
 
 class Event:
-    THRESHOLD_touch_down = 25 # duration between touch up judgement and touch down
+    THRESHOLD_touch_down = 30 # duration between touch up judgement and touch down
     THRESHOLD_touch_up = 10 # frames to confirm a touch up event
     THRESHOLD_long_press = 300 # duration between long press and touch down
     THRESHOLD_slide_distance = 0.1
@@ -48,8 +48,10 @@ class Event:
         if self.up_not_triggered:
             up = nine_axis[3] * nine_axis[6] + nine_axis[4] * nine_axis[7] + nine_axis[5] * nine_axis[8]
             mo = nine_axis[3] * nine_axis[3] + nine_axis[4] * nine_axis[4] + nine_axis[5] * nine_axis[5]
-            if up <= -0.2 and up ** 2 >= mo * 0.5: # The force is enough; The direction is correct
+            if up <= -0.1 and up ** 2 >= mo * 0.5: # The force is enough; The direction is correct
                 self.count_up += 1
+            else:
+                self.count_up = 0
             if (self.count_up >= self.THRESHOLD_touch_up):
                 self.count_up = 0
                 curr_event = self.TOUCH_UP

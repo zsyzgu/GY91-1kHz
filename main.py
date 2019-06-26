@@ -82,7 +82,8 @@ while True:
 
     if curr_event == event.TOUCH_UP: # Confirm
         if pan.selecting == None: # Typing
-            pan.update_visual_row(pitch)
+            if keyboard.is_pressed('s'):
+                pan.update_visual_row(pitch)
             pitchs.append(pitch)
             headings.append(heading)
             candidates = entry.predict(pitchs, headings)

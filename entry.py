@@ -2,13 +2,55 @@ import numpy as np
 import math
 import scipy.io as io
 
+class TouchModel:
+    row_pc = {}
+    col_pc = {}
+    col_a = 0
+    col_b = 0
+    col_std = 0
+
+    def __init__(self):
+        lines = [line.strip().split() for line in open('touch_model.m', 'r').readlines()]
+        split_id = 0
+        for i in range(len(lines)):
+            if lines[i][0] == 'Col':
+                split_id = i
+        X = []
+        Y = []
+        STD = []
+        for i in range(1, len(lines)):
+            if i == split_id:
+                continue
+            x = float(lines[i][0])
+            mean = float(lines[i][1])
+            std = float(lines[i][2])
+            if i < split_id:
+                self.row_pc[x] = [mean, std]
+            else:
+                self.col_pc[x] = [mean, std]
+                X.append(x)
+                Y.append(mean)
+                STD.append(std)
+        fit = np.polyfit(X, Y, 1)
+        self.col_a = fit[0]
+        self.col_b = fit[1]
+        self.col_std = np.mean(STD)
+    
+    def calc_row_score(self, col, pitch):
+        [mean, std] = self.row_pc[col] # col = n.0, n.2, n.8 stand for the 1st, 2nd, 3st rows
+        return -math.log(std) - 0.5 * ((pitch - mean) / std) ** 2
+    
+    def calc_col_score(self, delta_col, delta_heading):
+        if self.col_pc.has_key(delta_col):
+            [mean, std] = self.col_pc[delta_col]
+        else:
+            mean = self.col_a * delta_col + self.col_b
+            std = self.col_std
+        return -math.log(std) - 0.5 * ((delta_heading - mean) / std) ** 2
+
 class Entry:
     MAX_CANDIDATES = 5
-    row_mean = [-0.5, -0.8, -1.1]
-    row_std = [0.1, 0.1, 0.1]
-    col_a = -0.05
-    col_b = 0.00
-    col_std = 0.1
+    touch_model = None
     layout = {
         'q':(0.0, 0), 'w':(1.0, 0), 'e':(2.0, 0), 'r':(3.0, 0), 't':(4.0, 0), 'y':(5.0, 0), 'u':(6.0, 0), 'i':(7.0, 0), 'o':(8.0, 0), 'p':(9.0, 0),
         'a':(0.2, 1), 's':(1.2, 1), 'd':(2.2, 1), 'f':(3.2, 1), 'g':(4.2, 1), 'h':(5.2, 1), 'j':(6.2, 1), 'k':(7.2, 1), 'l':(8.2, 1),
@@ -26,7 +68,7 @@ class Entry:
         self.load_corpus(word_number)
         if use_bigrams:
             self.load_bigrams(word_number)
-        self.load_touch_model()
+        self.touch_model = TouchModel()
 
     def load_corpus(self, word_number):
         lines = open('corpus.txt', 'r').readlines()[:word_number]
@@ -43,19 +85,6 @@ class Entry:
             print 'Language Model = Bigrams'
             return
         print 'Language Model = Unigram'
-
-    def load_touch_model(self):
-        lines = [line.strip().split() for line in open('touch_model.m', 'r').readlines()]
-        self.row_mean[0] = float(lines[0][0])
-        self.row_mean[1] = float(lines[1][0])
-        self.row_mean[2] = float(lines[2][0])
-        self.row_std[0] = float(lines[0][1])
-        self.row_std[1] = float(lines[1][1])
-        self.row_std[2] = float(lines[2][1])
-        self.col_a = float(lines[3][0])
-        self.col_b = float(lines[3][1])
-        self.col_std = float(lines[3][2])
-        print 'Touch Model:', lines
     
     def update_last_word(self, word):
         if self.use_bigrams == True:
@@ -83,17 +112,12 @@ class Entry:
 
             # Pitch
             for j in range(length):
-                row = self.layout[self.words[i][j]][1]
-                mean = self.row_mean[row]
-                std = self.row_std[row]
-                score += -math.log(std) - 0.5 * ((pitchs[j] - mean) / std) ** 2
+                col = self.layout[self.words[i][j]][0]
+                score += self.touch_model.calc_row_score(col, pitchs[j])
             # Heading
             for j in range(1, length):
-                delta_col = self.layout[self.words[i][j]][0] - self.layout[self.words[i][j - 1]][0]
-                mean = self.col_a * delta_col + self.col_b
-                std = self.col_std
-                #score += -math.log(std) - 0.5 * ((headings[j] - headings[j - 1] - mean) / std) ** 2
-                score += -0.5 * ((headings[j] - headings[j - 1] - mean) / std) ** 2
+                delta_col = round(self.layout[self.words[i][j]][0] - self.layout[self.words[i][j - 1]][0], 2)
+                score += self.touch_model.calc_col_score(delta_col, headings[j] - headings[j - 1])
             scores.append(score)
         return scores
     

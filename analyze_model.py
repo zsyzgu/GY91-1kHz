@@ -3,6 +3,7 @@ import numpy as np
 import entry
 import utils
 import os
+import math
 
 output = file('touch_model.m', 'w')
 
@@ -50,12 +51,12 @@ def remove_bad_samples(X):
         return X
     return remove_bad_samples(X_res)
 
-def analyze_point_clouds(X, Y, is_row, is_result):
+def analyze_point_clouds(X, Y, is_result):
     X_res = []
     Y_res = []
     X_keys = []
     for i in range(len(X)):
-        X[i] = float(int(X[i] * 10)) / 10
+        X[i] = round(X[i], 2)
         if X[i] not in X_keys:
             X_keys.append(X[i])
     X_keys.sort()
@@ -68,18 +69,16 @@ def analyze_point_clouds(X, Y, is_row, is_result):
             values = remove_bad_samples(values)
         X_res.extend([x] * len(values))
         Y_res.extend(values)
-        if is_row == True:
-            print 'X=', x, 'Y=', np.mean(values), 'std=', np.std(values)
-            if is_result == True:
-                output.write(str(np.mean(values)) + ' ' + str(np.std(values)) + '\n')
-    if is_row == False:
-        fit = np.polyfit(X_res, Y_res, 1)
-        values = [Y_res[i] - (fit[0] * X_res[i] + fit[1]) for i in range(len(X_res))]
-        print 'a=', fit[0], 'b=', fit[1], 'std =', np.std(values)
-        if is_result == True:
-            output.write(str(fit[0]) + ' ' + str(fit[1]) + ' ' + str(np.std(values)) + '\n')
-    plt.plot(X_res, Y_res, '.')
-    #plt.show()
+        #X_res.extend([x])
+        #Y_res.extend([np.mean(values)])
+        if is_result and len(values) > 1:
+            print 'X=', x, 'mean=', np.mean(values), 'std=', np.std(values), 'cnt=', len(values)
+            output.write(str(x) + ' ' + str(np.mean(values)) + ' ' + str(np.std(values)) + '\n')
+    #fit = np.polyfit(X_res, Y_res, 1)
+    #print 'a=', fit[0], 'b=', fit[1], 'std =', np.std(values)
+    if is_result == True:
+        plt.plot(X_res, Y_res, '.')
+        plt.show()
     return X_res, Y_res
 
 if __name__ == "__main__":
@@ -98,22 +97,24 @@ if __name__ == "__main__":
             data.extend(read_data(file_name))
         data = np.array(data).reshape(-1, 5)
 
-        rows = data[:, 0]
+        rows = data[:, 1] # also x-axis: n.0, n.2, n.8 for the 1st, 2nd, 3st row
         cols = data[:, 1]
         pitchs = data[:, 2]
         delta_cols = data[:, 3]
         delta_headings = data[:, 4]
 
         # Pitch
-        X, Y = analyze_point_clouds(rows, pitchs, True, False)
+        X, Y = analyze_point_clouds(rows, pitchs, False)
         X_row.extend(X)
         Y_row.extend(Y)
 
         # (Delta) Heading
-        X, Y = analyze_point_clouds(delta_cols, delta_headings, False, False)
+        X, Y = analyze_point_clouds(delta_cols, delta_headings, False)
         X_col.extend(X)
         Y_col.extend(Y)
     
     print 'Total result:'
-    analyze_point_clouds(X_row, Y_row, True, True)
-    analyze_point_clouds(X_col, Y_col, False, True)
+    output.write('Row\n')
+    analyze_point_clouds(X_row, Y_row, True)
+    output.write('Col\n')
+    analyze_point_clouds(X_col, Y_col, True)
