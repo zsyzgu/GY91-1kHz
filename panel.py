@@ -6,6 +6,10 @@ import random
 import entry
 
 class HeadingVsPitch:  # Only update selection bar when d(heading)>d(pitch) in the past 31 ms
+    HISTORY_LEN = 100
+    tot = 0
+    history = [0] * HISTORY_LEN
+
     def __init__(self):
         self.reset(0, 0)
     
@@ -26,7 +30,19 @@ class HeadingVsPitch:  # Only update selection bar when d(heading)>d(pitch) in t
         self.last_pitch = pitch
 
     def is_heading_significant(self):
-        return self.cnt > min(self.tot, self.length) * 0.67
+        return self.cnt > min(self.tot, self.length) * 0.5
+    
+    def start_selection(self):
+        self.tot = 0
+
+    def update_selecting(self, selecting):
+        self.history[self.tot % self.HISTORY_LEN] = int(selecting)
+        self.tot += 1
+    
+    def get_selecting(self):
+        if self.tot < self.HISTORY_LEN:
+            return self.history[0]
+        return self.history[(self.tot + 1) % self.HISTORY_LEN]
 
 class Panel:
     running = False
@@ -102,15 +118,12 @@ class Panel:
         self.updated = True
 
     def update_visual_row(self, pitch):
-        r0 = -0.49
-        r1 = -0.78
-        r2 = -1.03
         row = None
         if pitch != None:
-            if (pitch < r1):
-                row = 1 + (pitch - r0) / (r2 - r1)
+            if (pitch < entry.TouchModel.R1):
+                row = 1 + (pitch - entry.TouchModel.R2) / (entry.TouchModel.R2 - entry.TouchModel.R1)
             else:
-                row = 1 - (pitch - r0) / (r0 - r1)
+                row = 1 - (pitch - entry.TouchModel.R0) / (entry.TouchModel.R0 - entry.TouchModel.R1)
             row = float(int((row + 1) * 5)) / 5 - 1
             if row < -0.5 or row > 2.5:
                 row = None
@@ -226,16 +239,16 @@ class Panel:
         self.start_heading = heading
         self.selecting = 2.5
         self.update_candidates_bar()
+        self.heading_vs_pitch.start_selection()
     
     def update_selection(self, heading, pitch):
         self.heading_vs_pitch.update(heading, pitch)
-        if self.heading_vs_pitch.is_heading_significant(): # Only update when d(heading)>d(pitch) in the past 31 ms
-            selecting = 2.5 + (heading - self.start_heading) / self.entry.touch_model.col_a
-            selecting = int(selecting * 5) / 5.0 + 0.1
-
-            if selecting != self.selecting:
-                self.selecting = selecting
-                self.update_candidates_bar()
+        selecting = 2.5 + (heading - self.start_heading) / self.entry.touch_model.col_a
+        selecting = int(selecting * 5) / 5.0 + 0.1
+        self.heading_vs_pitch.update_selecting(selecting)
+        if self.heading_vs_pitch.is_heading_significant() and selecting != self.selecting: # Only update when d(heading)>d(pitch) in the past 31 ms
+            self.selecting = selecting
+            self.update_candidates_bar()
 
     def clear_candidates_bar(self):
         self.selecting = None
@@ -243,7 +256,7 @@ class Panel:
         self.update_candidates_bar()
 
     def get_selecting_candidate(self):
-        select = int(self.selecting)
+        select = self.heading_vs_pitch.get_selecting() # The selection 100 ms before
         if (0 <= select and select < 5):
             id = self.candidate_rank[select]
             if (id < len(self.candidates)):

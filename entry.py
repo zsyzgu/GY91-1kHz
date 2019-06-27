@@ -3,6 +3,10 @@ import math
 import scipy.io as io
 
 class TouchModel:
+    R0 = -0.49
+    R1 = -0.78
+    R2 = -1.03
+
     row_pc = {}
     col_pc = {}
     col_a = 0
@@ -37,7 +41,16 @@ class TouchModel:
         self.col_std = np.mean(STD)
     
     def calc_row_score(self, col, pitch):
-        [mean, std] = self.row_pc[col] # col = n.0, n.2, n.8 stand for the 1st, 2nd, 3st rows
+        [mean, std] = [0, 0]
+        if self.row_pc.has_key(col):
+            [mean, std] = self.row_pc[col] # col = n.0, n.2, n.8 stand for the 1st, 2nd, 3st rows
+        else:
+            if (abs(col - math.floor(col) - 0.0) < 0.01):
+                [mean, std] = [self.R0, 0.1]
+            if (abs(col - math.floor(col) - 0.2) < 0.01):
+                [mean, std] = [self.R1, 0.1]
+            if (abs(col - math.floor(col) - 0.8) < 0.01):
+                [mean, std] = [self.R2, 0.1]
         return -math.log(std) - 0.5 * ((pitch - mean) / std) ** 2
     
     def calc_col_score(self, delta_col, delta_heading):
