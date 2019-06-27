@@ -2,6 +2,7 @@ import entry
 import utils
 import entry
 import numpy as np
+import time
 
 root = './data-model/'
 layout = entry.Entry.layout
@@ -45,6 +46,8 @@ def analyze_file(file):
     pitchs = []
     headings = []
 
+    start_time = time.time()
+
     for line in lines:
         tags = line.split()
         remark = tags[-1]
@@ -86,11 +89,8 @@ def analyze_user(user):
     print output
     return result[0]
 
-#Simulation Result
-#entry.row_mean[0] = -0.49
-#entry.row_mean[1] = -0.78
-#entry.row_mean[2] = -1.03
 
+start_time = time.time()
 total_result = []
 
 users = utils.get_users(root)
@@ -99,3 +99,4 @@ for user in users:
 
 total_result = np.array(total_result)
 print np.mean(total_result), np.std(total_result)
+print 'Escaped Time =', time.time() - start_time
