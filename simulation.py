@@ -7,8 +7,7 @@ import time
 root = './data-model/'
 layout = entry.Entry.layout
 phrases = [line.strip() for line in open('phrases.txt', 'r').readlines()]
-use_bigrams = True
-entry = entry.Entry(3000, use_bigrams)
+entry = entry.Entry(3000, entry.LanguageModel.USE_TRIGRAMS)
 entry.MAX_CANDIDATES = 5
 result = [0] * (entry.MAX_CANDIDATES + 1)
 
@@ -32,21 +31,21 @@ def simulate(task, pitchs, headings):
     if len(pitchs) < length:
         print 'Not completed'
         return
-    entry.update_last_word(None)
+    entry.update_grams(None, None)
     tot = 0
+    last_word = None
     for word in task:
         simulate_word(word, pitchs[tot : tot + len(word)], headings[tot : tot + len(word)])
-        if use_bigrams:
-            entry.update_last_word(word)
+        if entry.language_model.LM >= entry.language_model.USE_BIGRAMS:
+            entry.update_grams(word, last_word)
         tot += len(word)
+        last_word = word
 
 def analyze_file(file):
     lines = [line.strip() for line in open(file, 'r').readlines()]
     inputed = ''
     pitchs = []
     headings = []
-
-    start_time = time.time()
 
     for line in lines:
         tags = line.split()

@@ -143,7 +143,7 @@ class Panel:
         self.text_inputed = ''
         self.update_text_bar()
         if self.entry != None:
-            self.entry.update_last_word(None)
+            self.entry.update_grams(None, None)
     
     def redo_phrase(self):
         self.text_task = self.phrases
@@ -151,7 +151,7 @@ class Panel:
         self.text_inputed = ''
         self.update_text_bar()
         if self.entry != None:
-            self.entry.update_last_word(None)
+            self.entry.update_grams(None, None)
     
     def text_next_word(self):
         length = len(self.text_inputed)
@@ -165,14 +165,19 @@ class Panel:
         self.update_text_inputed(self.text_inputed + word)
         return word
     
-    def find_last_word(self): # For bigrams
+    def find_grams(self):
         if len(self.text_inputed) == 0:
-            return None
+            self.entry.update_grams(None, None)
+            return
         num = len(self.text_inputed.split(' '))
         tags = self.text_task.split(' ')
+        gram_1 = None
+        gram_2 = None
         if 0 <= num - 1 and num - 1 < len(tags):
-            return tags[num - 1]
-        return None
+            gram_1 = tags[num - 1]
+        if 0 <= num - 2 and num - 2 < len(tags):
+            gram_2 = tags[num - 2]
+        self.entry.update_grams(gram_1, gram_2)
 
     def text_add_word(self, str):
         if (len(self.text_inputed) > 0) and len(str) > 0:
@@ -180,14 +185,14 @@ class Panel:
         self.text_inputed += str
         self.update_text_bar()
         if self.entry != None:
-            self.entry.update_last_word(self.find_last_word())
+            self.find_grams()
     
     def text_delete_word(self):
         if (len(self.text_inputed) > 0):
             self.text_inputed = ' '.join(self.text_inputed.split(' ')[:-1])
             self.update_text_bar()
         if self.entry != None:
-            self.entry.update_last_word(self.find_last_word())
+            self.find_grams()
 
     # Candidate bar
 

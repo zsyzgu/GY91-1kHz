@@ -64,12 +64,15 @@ class LanguageModel:
     word_number = 3000
     LM = USE_UNITGRAM
     words = []
+    word_ids = {}
     unitgram = None
     bigrams = None
     trigrams = None
-    last_word_id = 0
+    gram_1 = 0
+    gram_2 = 0
+    prepared_trigrams = None
 
-    def __init__(self, word_number = 3000, LM = USE_UNITGRAM):
+    def __init__(self, word_number = 3000, LM = USE_BIGRAMS):
         if word_number > 5000:
             LM = self.USE_UNITGRAM
         
@@ -97,6 +100,9 @@ class LanguageModel:
         self.words = [str.lower(line.strip().split()[0]) for line in lines]
         self.unitgram = np.array([float(line.strip().split()[1]) for line in lines])
         self.unitgram /= sum(self.unitgram)
+        self.word_ids['<S>'] = 0
+        for i in range(len(self.words)):
+            self.word_ids[self.words[i]] = i + 1
     
     def load_bigrams(self):
         self.bigrams = io.loadmat('bigrams-5000')['mat']
@@ -106,11 +112,39 @@ class LanguageModel:
     
     def calc_score(self, id):
         score = 0
-        if self.LM >= self.USE_BIGRAMS and self.last_word_id != 0 and self.bigrams[self.last_word_id, id + 1] != 0: # Bigrams
-            score = math.log(self.bigrams[self.last_word_id, id + 1])
+        if self.LM >= self.USE_TRIGRAMS and self.gram_1 != 0 and self.gram_2 != 0 and self.prepared_trigrams[id] != 0: # Trigrams
+            score = math.log(self.prepared_trigrams[id])
+        elif self.LM >= self.USE_BIGRAMS and self.gram_1 != 0 and self.bigrams[self.gram_1, id + 1] != 0: # Bigrams
+            score = math.log(self.bigrams[self.gram_1, id + 1])
         else: # Unigram
             score = math.log(self.unitgram[id])
         return score
+    
+    def prepare_trigrams(self):
+        if self.LM >= self.USE_TRIGRAMS and self.gram_1 != 0 and self.gram_2 != 0:
+            self.prepared_trigrams = np.zeros(self.word_number)
+            L = 0
+            R = np.size(self.trigrams, 0)
+            while L < R:
+                mid = int((L + R) / 2)
+                if self.trigrams[mid][0] > self.gram_2 or (self.trigrams[mid][0] == self.gram_2 and self.trigrams[mid][1] >= self.gram_1):
+                    R = mid
+                else:
+                    L = mid + 1
+            i = L
+            while i < np.size(self.trigrams, 0) and self.trigrams[i][0] == self.gram_2 and self.trigrams[i][1] == self.gram_1:
+                id = int(self.trigrams[i][2] - 1)
+                if id < self.word_number:
+                    self.prepared_trigrams[id] = self.trigrams[i][3]
+                i += 1
+
+    def update_grams(self, gram_1, gram_2):
+        self.gram_1 = 0
+        self.gram_2 = 0
+        if gram_1 != None and self.word_ids.has_key(gram_1):
+            self.gram_1 = self.word_ids[gram_1]
+        if gram_2 != None and self.word_ids.has_key(gram_2):
+            self.gram_2 = self.word_ids[gram_2]
 
 class Entry:
     MAX_CANDIDATES = 5
@@ -123,24 +157,18 @@ class Entry:
         'z':(0.8, 2), 'x':(1.8, 2), 'c':(2.8, 2), 'v':(3.8, 2), 'b':(4.8, 2), 'n':(5.8, 2), 'm':(6.8, 2)
     }
 
-    def __init__(self, word_number = 3000, use_bigrams = True):
+    def __init__(self, word_number = 3000, LM = LanguageModel.USE_BIGRAMS):
         self.word_number = word_number
         self.touch_model = TouchModel()
-        self.language_model = LanguageModel(word_number, LanguageModel.USE_BIGRAMS)
+        self.language_model = LanguageModel(word_number, LM)
         self.words = self.language_model.words
-    
-    def update_last_word(self, word):
+
+    def update_grams(self, gram_1, gram_2):
         if self.language_model.LM >= LanguageModel.USE_BIGRAMS:
-            self.language_model.last_word_id = 0
-            if word == None:
-                return
-            word = str.lower(word)
-            for i in range(len(self.words)):
-                if word == self.words[i]:
-                    self.language_model.last_word_id = i + 1
-                    break
+            self.language_model.update_grams(gram_1, gram_2)
 
     def calc_scores(self, pitchs, headings):
+        self.language_model.prepare_trigrams()
         scores = []
         for i in range(len(self.words)):
             length = len(self.words[i])
