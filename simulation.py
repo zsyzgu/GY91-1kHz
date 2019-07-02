@@ -13,8 +13,6 @@ result = [0] * (entry.MAX_CANDIDATES + 1)
 
 def simulate_word(word, pitchs, headings):
     global result
-    if word not in entry.words:
-        return
     candidates = entry.predict(pitchs, headings)
     id = -1
     for i in range(entry.MAX_CANDIDATES):
@@ -25,12 +23,16 @@ def simulate_word(word, pitchs, headings):
         result[entry.MAX_CANDIDATES] += 1
     else:
         result[id] += 1
+    return id
 
 def simulate(task, pitchs, headings):
     length = len(''.join(task))
     if len(pitchs) < length:
         print 'Not completed'
         return
+    for word in task:
+        if word not in entry.words:
+            return
     entry.update_grams(None, None)
     tot = 0
     last_word = None

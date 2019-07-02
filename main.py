@@ -9,21 +9,10 @@ import math
 import event
 import log
 
-'''
-input = read_serial.ReadSerial()
-ev = event.Event()
-while True:
-    if keyboard.is_pressed('q'):
-        break
-    data = input.get_data() # [t, gx, gy, gz, ax, ay, az, gra_x, gra_y, gra_z, pitch, heading, is_touch]
-    curr_event = ev.get_event(data)
-exit()
-'''
-
 log = log.Log()
+entry = entry.Entry(3000, entry.LanguageModel.USE_TRIGRAMS)
 input = read_serial.ReadSerial()
 input.get_data()
-entry = entry.Entry(3000)
 pan = panel.Panel(entry)
 log.start_phrase(pan.text_task)
 print 'Trial', pan.phrase_cnt, 'begin.'
@@ -41,10 +30,12 @@ def clear():
     pan.clear_candidates_bar()
     pan.update_visual_row(None)
 
+T = 0
 while True:
-    if keyboard.is_pressed('q') or pan.phrase_cnt == 10:
+    T += 1
+    if T % 10 == 0 and (keyboard.is_pressed('q') or pan.phrase_cnt == 10):
         break
-    if len(pan.text_inputed) > 0:
+    if T % 10 == 5 and len(pan.text_inputed) > 0:
         if keyboard.is_pressed('y'): # Next phrase
             log.end_phrase(True)
             pan.next_phrase()
@@ -60,7 +51,6 @@ while True:
     log.log_raw_data(data)
 
     timestamp = data[0]
-    nine_axis = data[1 : 10]
     pitch = data[10]
     heading = data[11]
 
@@ -82,8 +72,7 @@ while True:
 
     if curr_event == event.TOUCH_UP: # Confirm
         if pan.selecting == None: # Typing
-            if keyboard.is_pressed('s'):
-                pan.update_visual_row(pitch)
+            pan.update_visual_row(pitch) # Visual feedback
             pitchs.append(pitch)
             headings.append(heading)
             candidates = entry.predict(pitchs, headings)

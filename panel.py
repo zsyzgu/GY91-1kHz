@@ -73,7 +73,7 @@ class Panel:
         thread = threading.Thread(target = self.update)
         thread.start()
 
-        phrases = [str.lower(line.strip()) for line in open('phrases.txt', 'r').readlines()]
+        phrases = [str.lower(line.strip()) for line in open('phrases-main.txt', 'r').readlines()]
         if entry == None:
             self.phrases = phrases
         else:
@@ -121,9 +121,9 @@ class Panel:
         row = None
         if pitch != None:
             if (pitch < entry.TouchModel.R1):
-                row = 1 + (pitch - entry.TouchModel.R2) / (entry.TouchModel.R2 - entry.TouchModel.R1)
+                row = 1 + (pitch - entry.TouchModel.R1) / (entry.TouchModel.R2 - entry.TouchModel.R1)
             else:
-                row = 1 - (pitch - entry.TouchModel.R0) / (entry.TouchModel.R0 - entry.TouchModel.R1)
+                row = 1 - (pitch - entry.TouchModel.R1) / (entry.TouchModel.R0 - entry.TouchModel.R1)
             row = float(int((row + 1) * 5)) / 5 - 1
             if row < -0.5 or row > 2.5:
                 row = None
@@ -243,7 +243,7 @@ class Panel:
     
     def update_selection(self, heading, pitch):
         self.heading_vs_pitch.update(heading, pitch)
-        selecting = 2.5 + (heading - self.start_heading) / self.entry.touch_model.col_a
+        selecting = 2.5 + (heading - self.start_heading) / (-0.05)
         selecting = int(selecting * 5) / 5.0 + 0.1
         self.heading_vs_pitch.update_selecting(selecting)
         if self.heading_vs_pitch.is_heading_significant() and selecting != self.selecting: # Only update when d(heading)>d(pitch) in the past 31 ms

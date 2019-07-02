@@ -4,6 +4,8 @@ import entry
 import utils
 import os
 import math
+from scipy.stats import linregress
+from sklearn import linear_model
 
 output = file('touch_model.m', 'w')
 
@@ -12,6 +14,7 @@ def read_data(file_name):
     data = []
     lines = open(file_name, 'r').readlines()
 
+    last_row = None
     last_col = None
     last_heading = None
     buffer = []
@@ -22,6 +25,7 @@ def read_data(file_name):
         if word == 'Y' or word == 'N':
             if word == 'Y':
                 data.extend(buffer)
+            last_row = None
             last_col = None
             last_heading = None
             buffer = []
@@ -29,92 +33,128 @@ def read_data(file_name):
             pitch = float(tags[10])
             heading = float(tags[11])
             word = str.lower(tags[-1])
+            curr_row = layout[word][1]
             curr_col = layout[word][0]
             if last_col != None:
                 row = layout[word][1]
                 col = curr_col
-                delta_col = curr_col - last_col
                 delta_heading = heading - last_heading
-                buffer.append([row, col, pitch, delta_col, delta_heading])
+                buffer.append([row, col, last_row, last_col, pitch, delta_heading])
+            last_row = curr_row
             last_col = curr_col
             last_heading = heading
     return data
 
-def remove_bad_samples(X):
-    mean = np.mean(X)
-    std = np.std(X)
-    X_res = []
-    for x in X:
-        if (abs(x - mean) <= 3 * std):
-            X_res.append(x)
-    if len(X_res) == len(X):
-        return X
-    return remove_bad_samples(X_res)
+def remove_bad_data(data):
+    is_updated = False
+    new_data = []
 
-def analyze_point_clouds(X, Y, is_result):
-    X_res = []
-    Y_res = []
-    X_keys = []
+    row_dict = {}
+    col_dict = {}
+
+    for line in data:
+        row = round(line[0], 1)
+        pitch = line[4]
+        delta_col = round(line[3] - line[1], 1)
+        delta_heading = line[5]
+        if not row_dict.has_key(row):
+            row_dict[row] = []
+        if not col_dict.has_key(delta_col):
+            col_dict[delta_col] = []
+        row_dict[row].append(pitch)
+        col_dict[delta_col].append(delta_heading)
+    
+    for line in data:
+        row = round(line[0], 1)
+        pitch = line[4]
+        delta_col = round(line[3] - line[1], 1)
+        delta_heading = line[5]
+        row_mean = np.mean(row_dict[row])
+        row_std = np.std(row_dict[row])
+        col_mean = np.mean(col_dict[delta_col])
+        col_std = np.std(col_dict[delta_col])
+
+        if abs(pitch - row_mean) <= 3 * row_std and abs(delta_heading - col_mean) <= 3 * col_std:
+            new_data.append(line)
+        else:
+            is_updated = True
+
+    if is_updated:
+        return remove_bad_data(new_data)
+    else:
+        return new_data
+
+def combine_data(X, Y):
+    dict = {}
+
     for i in range(len(X)):
-        X[i] = round(X[i], 2)
-        if X[i] not in X_keys:
-            X_keys.append(X[i])
-    X_keys.sort()
-    for x in X_keys:
-        values = []
-        for i in range(len(X)):
-            if (X[i] == x):
-                values.append(Y[i])
-        if is_result == False:
-            values = remove_bad_samples(values)
-        X_res.extend([x] * len(values))
-        Y_res.extend(values)
-        #X_res.extend([x])
-        #Y_res.extend([np.mean(values)])
-        if is_result and len(values) > 1:
-            print 'X=', x, 'mean=', np.mean(values), 'std=', np.std(values), 'cnt=', len(values)
-            output.write(str(x) + ' ' + str(np.mean(values)) + ' ' + str(np.std(values)) + '\n')
-    #fit = np.polyfit(X_res, Y_res, 1)
-    #print 'a=', fit[0], 'b=', fit[1], 'std =', np.std(values)
-    if is_result == True:
-        plt.plot(X_res, Y_res, '.')
-        plt.show()
-    return X_res, Y_res
+        if not dict.has_key(X[i]):
+            dict[X[i]] = []
+        dict[X[i]].append(Y[i])
+    
+    X = []
+    Y = []
+
+    for key, value in dict.items():
+        X.append(key)
+        Y.append(np.std(value))
+    
+    return X, Y
 
 if __name__ == "__main__":
     root = './data-model/'
     users = utils.get_users(root)
 
-    X_row = []
-    Y_row = []
-    X_col = []
-    Y_col = []
+    data = []
     for user in users:
         print user
         file_names = utils.get_all_file_name(root + user + '_')
-        data = []
+        user_data = []
         for file_name in file_names:
-            data.extend(read_data(file_name))
-        data = np.array(data).reshape(-1, 5)
+            user_data.extend(read_data(file_name))
+        user_data = remove_bad_data(user_data)
+        data.extend(user_data)
+    data = np.array(data).reshape(-1, 6)
 
-        rows = data[:, 1] # also x-axis: n.0, n.2, n.8 for the 1st, 2nd, 3st row
-        cols = data[:, 1]
-        pitchs = data[:, 2]
-        delta_cols = data[:, 3]
-        delta_headings = data[:, 4]
-
-        # Pitch
-        X, Y = analyze_point_clouds(rows, pitchs, False)
-        X_row.extend(X)
-        Y_row.extend(Y)
-
-        # (Delta) Heading
-        X, Y = analyze_point_clouds(delta_cols, delta_headings, False)
-        X_col.extend(X)
-        Y_col.extend(Y)
+    for i in range(26):
+        ch = chr(ord('a') + i)
+        r = entry.Entry.layout[ch][1]
+        c = entry.Entry.layout[ch][0]
+        Y = []
+        for i in range(np.size(data, 0)):
+            if abs(data[i, 0] - r) < 0.001 and abs(data[i, 1] - c) < 0.001:
+                Y.append(data[i, 4])
+        mean = 0
+        std = 0
+        if len(Y) <= 1:
+            if r == 0: mean = entry.Entry.touch_model.R0
+            if r == 1: mean = entry.Entry.touch_model.R1
+            if r == 2: mean = entry.Entry.touch_model.R2
+            std = 0.05
+        else:
+            mean = np.mean(Y)
+            std = np.std(Y)
+        print mean, std
+        output.write(str(mean) + ' ' + str(std) + '\n')
     
-    print 'Total result:'
-    output.write('Row\n')
-    analyze_point_clouds(X_row, Y_row, True)
-    output.write('Col\n')
-    analyze_point_clouds(X_col, Y_col, True)
+    for r0 in range(3):
+        for r1 in range(3):
+            X = []
+            Y = []
+            for i in range(np.size(data, 0)):
+                if abs(data[i, 2] - r0) < 0.001 and abs(data[i, 0] - r1) < 0.001:
+                    X.append(round(data[i, 1] - data[i, 3], 1))
+                    Y.append(data[i, 5])
+            dict = {}
+
+            for i in range(len(X)):
+                if not dict.has_key(X[i]):
+                    dict[X[i]] = []
+                dict[X[i]].append(Y[i])
+
+            for key, value in dict.items():
+                if len(value) > 1:
+                    mean = np.mean(value)
+                    std = np.std(value)
+                    print r0, r1, key, mean, std
+                    output.write(str(r0) + ' ' + str(r1) + ' '  + str(key) + ' ' + str(mean) + ' ' + str(std) + '\n')

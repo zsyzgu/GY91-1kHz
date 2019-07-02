@@ -3,70 +3,49 @@ import math
 import scipy.io as io
 
 class TouchModel:
-    R0 = -0.49
-    R1 = -0.78
-    R2 = -1.03
+    R0 = -0.45
+    R1 = -0.75
+    R2 = -1.05
 
-    row_pc = {}
-    col_pc = {}
-    col_a = 0
-    col_b = 0
-    col_std = 0
+    pitch_data = []
+    heading_data = {}
 
     def __init__(self):
         lines = [line.strip().split() for line in open('touch_model.m', 'r').readlines()]
-        split_id = 0
-        for i in range(len(lines)):
-            if lines[i][0] == 'Col':
-                split_id = i
-        X = []
-        Y = []
-        STD = []
-        for i in range(1, len(lines)):
-            if i == split_id:
-                continue
-            x = float(lines[i][0])
-            mean = float(lines[i][1])
-            std = float(lines[i][2])
-            if i < split_id:
-                self.row_pc[x] = [mean, std]
-            else:
-                self.col_pc[x] = [mean, std]
-                X.append(x)
-                Y.append(mean)
-                STD.append(std)
-        fit = np.polyfit(X, Y, 1)
-        self.col_a = fit[0]
-        self.col_b = fit[1]
-        self.col_std = np.mean(STD)
+        for i in range(0, 26):
+            self.pitch_data.append([float(v) for v in lines[i]])
+        for i in range(26, len(lines)):
+            line = [float(v) for v in lines[i]]
+            id = round((line[0] * 3 + line[1]) * 100 + line[2], 1)
+            self.heading_data[id] = [line[3], line[4]]
     
-    def calc_row_score(self, col, pitch):
-        [mean, std] = [0, 0]
-        if self.row_pc.has_key(col):
-            [mean, std] = self.row_pc[col] # col = n.0, n.2, n.8 stand for the 1st, 2nd, 3st rows
-        else:
-            if (abs(col - math.floor(col) - 0.0) < 0.01):
-                [mean, std] = [self.R0, 0.1]
-            if (abs(col - math.floor(col) - 0.2) < 0.01):
-                [mean, std] = [self.R1, 0.1]
-            if (abs(col - math.floor(col) - 0.8) < 0.01):
-                [mean, std] = [self.R2, 0.1]
+    def calc_pitch_score(self, letter, pitch):
+        id = ord(letter) - ord('a')
+        mean = self.pitch_data[id][0]
+        std = self.pitch_data[id][1]
         return -math.log(std) - 0.5 * ((pitch - mean) / std) ** 2
     
-    def calc_col_score(self, delta_col, delta_heading):
-        if self.col_pc.has_key(delta_col):
-            [mean, std] = self.col_pc[delta_col]
-        else:
-            mean = self.col_a * delta_col + self.col_b
-            std = self.col_std
+    def calc_heading_score(self, last_row, row, delta_col, delta_heading):
+        mean = -0.05 * delta_col
+        std = 0.05
+        id = round((last_row * 3 + row) * 100 + delta_col, 1)
+        if self.heading_data.has_key(id):
+            mean = self.heading_data[id][0]
+            std = self.heading_data[id][1]
         return -math.log(std) - 0.5 * ((delta_heading - mean) / std) ** 2
     
     def calc_score(self, word, pitchs, headings):
         score = 0
-        for i in range(len(word)): # Pitch
-            score += self.calc_row_score(Entry.layout[word[i]][0], pitchs[i])
-        for i in range(1, len(word)): # Heading
-            score += self.calc_col_score(round(Entry.layout[word[i]][0] - Entry.layout[word[i - 1]][0], 2), headings[i] - headings[i - 1])
+        last_row = None
+        last_col = None
+        for i in range(len(word)):
+            row = Entry.layout[word[i]][1]
+            col = Entry.layout[word[i]][0]
+            score += self.calc_pitch_score(word[i], pitchs[i]) # Pitch
+            if last_row != None:
+                score += self.calc_heading_score(last_row, row, col - last_col, headings[i] - headings[i - 1]) # Heading
+            last_row = row
+            last_col = col
         return score
 
 class LanguageModel:
@@ -83,7 +62,8 @@ class LanguageModel:
     trigrams = None
     gram_1 = 0
     gram_2 = 0
-    prepared_trigrams = None
+    bigrams_data = None
+    trigrams_data = None
 
     def __init__(self, word_number = 3000, LM = USE_BIGRAMS):
         if word_number > 5000:
@@ -118,38 +98,49 @@ class LanguageModel:
             self.word_ids[self.words[i]] = i + 1
     
     def load_bigrams(self):
-        self.bigrams = io.loadmat('bigrams-5000')['mat']
+        self.bigrams_data = io.loadmat('bigrams-5000')['mat']
     
     def load_trigrams(self):
-        self.trigrams = io.loadmat('trigrams-5000')['mat']
+        self.trigrams_data = io.loadmat('trigrams-5000')['mat']
     
     def calc_score(self, id):
         score = 0
-        if self.LM >= self.USE_TRIGRAMS and self.gram_1 != 0 and self.gram_2 != 0 and self.prepared_trigrams[id] != 0: # Trigrams
-            score = math.log(self.prepared_trigrams[id])
-        elif self.LM >= self.USE_BIGRAMS and self.gram_1 != 0 and self.bigrams[self.gram_1, id + 1] != 0: # Bigrams
-            score = math.log(self.bigrams[self.gram_1, id + 1])
+        if self.LM >= self.USE_TRIGRAMS and self.gram_1 != 0 and self.gram_2 != 0 and self.trigrams[id] != 0: # Trigrams
+            score = math.log(self.trigrams[id])
+        elif self.LM >= self.USE_BIGRAMS and self.gram_1 != 0 and self.bigrams[id] != 0: # Bigrams
+            score = math.log(self.bigrams[id])
         else: # Unigram
             score = math.log(self.unitgram[id])
         return score
-    
+
+    def prepare_bigrams(self):
+        if self.LM >= self.USE_BIGRAMS and self.gram_1 != 0:
+            self.bigrams = self.bigrams_data[self.gram_1, 1 : self.word_number + 1]
+            self.bigrams /= sum(self.bigrams)
+
     def prepare_trigrams(self):
         if self.LM >= self.USE_TRIGRAMS and self.gram_1 != 0 and self.gram_2 != 0:
-            self.prepared_trigrams = np.zeros(self.word_number)
+            self.trigrams = np.zeros(self.word_number)
             L = 0
-            R = np.size(self.trigrams, 0)
+            R = np.size(self.trigrams_data, 0)
             while L < R:
                 mid = int((L + R) / 2)
-                if self.trigrams[mid][0] > self.gram_2 or (self.trigrams[mid][0] == self.gram_2 and self.trigrams[mid][1] >= self.gram_1):
+                if self.trigrams_data[mid][0] > self.gram_2 or (self.trigrams_data[mid][0] == self.gram_2 and self.trigrams_data[mid][1] >= self.gram_1):
                     R = mid
                 else:
                     L = mid + 1
             i = L
-            while i < np.size(self.trigrams, 0) and self.trigrams[i][0] == self.gram_2 and self.trigrams[i][1] == self.gram_1:
-                id = int(self.trigrams[i][2] - 1)
+            
+            total = 0
+            while i < np.size(self.trigrams_data, 0) and self.trigrams_data[i][0] == self.gram_2 and self.trigrams_data[i][1] == self.gram_1:
+                id = int(self.trigrams_data[i][2] - 1)
                 if id < self.word_number:
-                    self.prepared_trigrams[id] = self.trigrams[i][3]
+                    self.trigrams[id] = self.trigrams_data[i][3]
+                    total += self.trigrams_data[i][3]
                 i += 1
+            
+            if total > 0:
+                self.trigrams /= total
 
     def update_grams(self, gram_1, gram_2):
         self.gram_1 = 0
@@ -181,6 +172,7 @@ class Entry:
             self.language_model.update_grams(gram_1, gram_2)
 
     def calc_scores(self, pitchs, headings):
+        self.language_model.prepare_bigrams()
         self.language_model.prepare_trigrams()
         scores = []
         for i in range(len(self.words)):

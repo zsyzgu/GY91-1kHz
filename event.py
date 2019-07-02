@@ -2,8 +2,8 @@ import contact
 import numpy as np
 
 class Event:
-    THRESHOLD_touch_down = 30 # duration between touch up judgement and touch down
-    THRESHOLD_touch_up = 10 # frames to confirm a touch up event
+    THRESHOLD_touch_down = 35 # duration between touch up judgement and touch down
+    THRESHOLD_touch_up = 15 # frames to confirm a touch up event
     THRESHOLD_long_press = 300 # duration between long press and touch down
     THRESHOLD_slide_distance = 0.1
 
