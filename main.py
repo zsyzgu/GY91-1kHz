@@ -72,7 +72,7 @@ while True:
 
     if curr_event == event.TOUCH_UP: # Confirm
         if pan.selecting == None: # Typing
-            pan.update_visual_row(pitch) # Visual feedback
+            #pan.update_visual_row(pitch) # Visual feedback
             pitchs.append(pitch)
             headings.append(heading)
             candidates = entry.predict(pitchs, headings)

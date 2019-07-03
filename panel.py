@@ -100,7 +100,7 @@ class Panel:
             if self.updated:
                 cv2.imshow('image', self.image)
                 self.updated = False
-            cv2.waitKey(10)
+            cv2.waitKey(5)
     
     def stop(self):
         self.running = False
@@ -131,7 +131,7 @@ class Panel:
             self.visual_row = row
             cv2.rectangle(self.image, (0, 2 * self.length - 1), (10 * self.length, 5 * self.length - 1), (0, 0, 0), -1)
             if row != None:
-                cv2.line(self.image, (0, int((2.5 + row) * self.length)), (10 * self.length, int((2.5 + row) * self.length)), (64, 64, 64), 1)
+                cv2.line(self.image, (0, int((2.5 + row) * self.length)), (10 * self.length, int((2.5 + row) * self.length)), (128, 128, 128), 1)
             self.show_keyboard()
 
     # Text bar

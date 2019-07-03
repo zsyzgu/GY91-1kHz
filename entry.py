@@ -3,20 +3,21 @@ import math
 import scipy.io as io
 
 class TouchModel:
-    R0 = -0.45
-    R1 = -0.75
-    R2 = -1.05
+    R0 = -0.52
+    R1 = -0.81
+    R2 = -1.03
 
     pitch_data = []
-    heading_data = {}
+    heading_data = []
 
     def __init__(self):
         lines = [line.strip().split() for line in open('touch_model.m', 'r').readlines()]
         for i in range(0, 26):
             self.pitch_data.append([float(v) for v in lines[i]])
+        self.heading_data = [None] * 200
         for i in range(26, len(lines)):
             line = [float(v) for v in lines[i]]
-            id = round((line[0] * 3 + line[1]) * 100 + line[2], 1)
+            id = int((line[0] * 3 + line[1]) * 20 + line[2] + 10)
             self.heading_data[id] = [line[3], line[4]]
     
     def calc_pitch_score(self, letter, pitch):
@@ -28,10 +29,11 @@ class TouchModel:
     def calc_heading_score(self, last_row, row, delta_col, delta_heading):
         mean = -0.05 * delta_col
         std = 0.05
-        id = round((last_row * 3 + row) * 100 + delta_col, 1)
-        if self.heading_data.has_key(id):
-            mean = self.heading_data[id][0]
-            std = self.heading_data[id][1]
+        id = int((last_row * 3 + row) * 20 + delta_col + 10)
+        tags = self.heading_data[id]
+        if tags != None:
+            mean = tags[0]
+            std = tags[1]
         return -math.log(std) - 0.5 * ((delta_heading - mean) / std) ** 2
     
     def calc_score(self, word, pitchs, headings):
