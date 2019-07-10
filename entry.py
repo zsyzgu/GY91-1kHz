@@ -56,6 +56,7 @@ class LanguageModel:
     USE_TRIGRAMS = 2
 
     word_number = 3000
+    trigrams_size = 0
     LM = USE_UNITGRAM
     words = []
     word_ids = {}
@@ -68,7 +69,7 @@ class LanguageModel:
     trigrams_data = None
 
     def __init__(self, word_number = 3000, LM = USE_BIGRAMS):
-        if word_number > 5000:
+        if word_number > 10000:
             LM = self.USE_UNITGRAM
         
         self.word_number = word_number
@@ -84,10 +85,10 @@ class LanguageModel:
         assert LM >= self.USE_UNITGRAM
         self.load_unitgram()
 
-        if LM >= self.USE_BIGRAMS and word_number <= 5000:
+        if LM >= self.USE_BIGRAMS:
             self.load_bigrams()
 
-        if LM >= self.USE_TRIGRAMS and word_number <= 5000:
+        if LM >= self.USE_TRIGRAMS:
             self.load_trigrams()
 
     def load_unitgram(self):
@@ -100,10 +101,18 @@ class LanguageModel:
             self.word_ids[self.words[i]] = i + 1
     
     def load_bigrams(self):
-        self.bigrams_data = io.loadmat('bigrams-5000')['mat']
+        if self.word_number <= 5000:
+            self.bigrams_data = io.loadmat('bigrams-5000')['mat']
+        else:
+            self.bigrams_data = io.loadmat('bigrams-10000')['mat']
     
     def load_trigrams(self):
-        self.trigrams_data = io.loadmat('trigrams-5000')['mat']
+        if self.word_number <= 5000:
+            self.trigrams_data = io.loadmat('trigrams-5000')['mat']
+            self.trigrams_size = 5000
+        else:
+            self.trigrams_data = io.loadmat('trigrams-10000')['mat']
+            self.trigrams_size = 10000
     
     def calc_score(self, id):
         score = 0
@@ -125,20 +134,21 @@ class LanguageModel:
             self.trigrams = np.zeros(self.word_number)
             L = 0
             R = np.size(self.trigrams_data, 0)
+            gram_id = self.gram_2 * (self.trigrams_size + 1) + self.gram_1
             while L < R:
                 mid = int((L + R) / 2)
-                if self.trigrams_data[mid][0] > self.gram_2 or (self.trigrams_data[mid][0] == self.gram_2 and self.trigrams_data[mid][1] >= self.gram_1):
+                if self.trigrams_data[mid][0] >= gram_id:
                     R = mid
                 else:
                     L = mid + 1
             i = L
             
             total = 0
-            while i < np.size(self.trigrams_data, 0) and self.trigrams_data[i][0] == self.gram_2 and self.trigrams_data[i][1] == self.gram_1:
-                id = int(self.trigrams_data[i][2] - 1)
+            while i < np.size(self.trigrams_data, 0) and self.trigrams_data[i][0] == gram_id:
+                id = int(self.trigrams_data[i][1] - 1)
                 if id < self.word_number:
-                    self.trigrams[id] = self.trigrams_data[i][3]
-                    total += self.trigrams_data[i][3]
+                    self.trigrams[id] = self.trigrams_data[i][2]
+                    total += self.trigrams_data[i][2]
                 i += 1
             
             if total > 0:

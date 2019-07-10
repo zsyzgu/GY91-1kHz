@@ -7,7 +7,7 @@ import math
 from scipy.stats import linregress
 from sklearn import linear_model
 
-output = file('touch_model.m', 'w')
+output = None
 
 def read_data(file_name):
     layout = entry.Entry.layout
@@ -101,20 +101,8 @@ def combine_data(X, Y):
     
     return X, Y
 
-if __name__ == "__main__":
-    root = './data-model/'
-    users = utils.get_users(root)
-
-    data = []
-    for user in users:
-        print user
-        file_names = utils.get_all_file_name(root + user + '_')
-        user_data = []
-        for file_name in file_names:
-            user_data.extend(read_data(file_name))
-        user_data = remove_bad_data(user_data)
-        data.extend(user_data)
-    data = np.array(data).reshape(-1, 6)
+def output_model(data):
+    output = file('touch_model.m', 'w')
 
     for i in range(26):
         ch = chr(ord('a') + i)
@@ -127,16 +115,18 @@ if __name__ == "__main__":
         mean = 0
         std = 0
         if len(Y) <= 1:
-            if r == 0: mean = entry.Entry.touch_model.R0
-            if r == 1: mean = entry.Entry.touch_model.R1
-            if r == 2: mean = entry.Entry.touch_model.R2
+            if r == 0: mean = entry.TouchModel.R0
+            if r == 1: mean = entry.TouchModel.R1
+            if r == 2: mean = entry.TouchModel.R2
             std = 0.05
         else:
             mean = np.mean(Y)
             std = np.std(Y)
-        print mean, std
+        if std < 0.001:
+            std = 0.05
+        #print mean, std
         output.write(str(mean) + ' ' + str(std) + '\n')
-    
+
     for r0 in range(3):
         for r1 in range(3):
             X = []
@@ -156,5 +146,27 @@ if __name__ == "__main__":
                 if len(value) > 1:
                     mean = np.mean(value)
                     std = np.std(value)
-                    print r0, r1, key, mean, std
+                    #print r0, r1, key, mean, std
+                    if std < 0.001:
+                        std = 0.05
                     output.write(str(r0) + ' ' + str(r1) + ' '  + str(key) + ' ' + str(mean) + ' ' + str(std) + '\n')
+
+def analyze_users(users):
+    data = []
+    for user in users:
+        print user
+        file_names = utils.get_all_file_name(root + user + '_')
+        user_data = []
+        for file_name in file_names:
+            user_data.extend(read_data(file_name))
+        user_data = remove_bad_data(user_data)
+        data.extend(user_data)
+    data = np.array(data).reshape(-1, 6)
+
+    output_model(data)
+
+if __name__ == "__main__":
+    root = './data-model/'
+    users = utils.get_users(root)
+
+    analyze_users(users)

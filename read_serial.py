@@ -5,9 +5,14 @@ import math
 import numpy as np
 
 class ReadSerial():
-    offset_gx = -0.072
-    offset_gy = +0.001
-    offset_gz = -0.002
+    #9250
+    offset_gx = -0.06698
+    offset_gy = -0.00215
+    offset_gz = -0.00066
+    #9255
+    #offset_gx = +0.10091
+    #offset_gy = -0.01459
+    #offset_gz = -0.00912
 
     ser = None
     mad = None

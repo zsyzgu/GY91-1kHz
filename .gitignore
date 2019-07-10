@@ -7,3 +7,4 @@ data-main/
 bigrams-5000
 trigrams-5000
 *.mat
+fake_study2_log.txt

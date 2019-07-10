@@ -3,11 +3,12 @@ import utils
 import entry
 import numpy as np
 import time
+import analyze_model
 
 root = './data-model/'
 layout = entry.Entry.layout
 phrases = [line.strip() for line in open('phrases.txt', 'r').readlines()]
-entry = entry.Entry(3000, entry.LanguageModel.USE_TRIGRAMS)
+entry = entry.Entry(5000, entry.LanguageModel.USE_TRIGRAMS)
 entry.MAX_CANDIDATES = 5
 result = [0] * (entry.MAX_CANDIDATES + 1)
 
@@ -89,7 +90,6 @@ def analyze_user(user):
         output += ' ' + str(round(result[i] * 100, 2)) + '%'
     print output
     return result[0]
-
 
 start_time = time.time()
 total_result = []

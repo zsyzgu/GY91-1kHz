@@ -10,7 +10,7 @@ import event
 import log
 
 log = log.Log()
-entry = entry.Entry(3000, entry.LanguageModel.USE_TRIGRAMS)
+entry = entry.Entry(5000, entry.LanguageModel.USE_TRIGRAMS)
 input = read_serial.ReadSerial()
 input.get_data()
 pan = panel.Panel(entry)
@@ -72,7 +72,7 @@ while True:
 
     if curr_event == event.TOUCH_UP: # Confirm
         if pan.selecting == None: # Typing
-            #pan.update_visual_row(pitch) # Visual feedback
+            # pan.update_visual_row(pitch) # Visual feedback
             pitchs.append(pitch)
             headings.append(heading)
             candidates = entry.predict(pitchs, headings)
