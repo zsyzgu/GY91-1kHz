@@ -91,13 +91,14 @@ def analyze_user(user):
     print output
     return result[0]
 
-start_time = time.time()
-total_result = []
+if __name__ == "__main__":
+    start_time = time.time()
+    total_result = []
 
-users = utils.get_users(root)
-for user in users:
-    total_result.append(analyze_user(user))
+    users = utils.get_users(root)
+    for user in users:
+        total_result.append(analyze_user(user))
 
-total_result = np.array(total_result)
-print np.mean(total_result), np.std(total_result)
-print 'Escaped Time =', time.time() - start_time
+    total_result = np.array(total_result)
+    print np.mean(total_result), np.std(total_result)
+    print 'Escaped Time =', time.time() - start_time

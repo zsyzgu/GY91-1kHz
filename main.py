@@ -82,7 +82,10 @@ while True:
             word = pan.get_selecting_candidate()
             pan.text_add_word(word)
             clear()
-            log.entry_a_word(word)
+            if word == '':
+                log.delete_letters()
+            else:
+                log.entry_a_word(word)
 
 pan.stop()
 time.sleep(1)

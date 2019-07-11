@@ -3,6 +3,7 @@ p.txt
 data-contact/
 data-model/
 data-main/
+data-person/
 *.m
 bigrams-5000
 trigrams-5000
