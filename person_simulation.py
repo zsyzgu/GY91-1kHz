@@ -53,6 +53,40 @@ def simulate_word(text_entry, word, pitchs, headings):
             break
     return id
 
+def combine_GP(user):
+    SAMPLE_THRESHOLD = 10
+
+    G_file = 'touch_model.m'
+    P_file = root + 'person_model_' + user + '.m'
+    output = open(root + 'touch_model_' + user + '.m', 'w')
+
+    pitch = []
+    heading = [None] * 200
+
+    lines = [line.strip().split() for line in open(G_file, 'r').readlines()]
+    for i in range(0, 26):
+        pitch.append(lines[i])
+    for i in range(26, len(lines)):
+        line = [float(v) for v in lines[i]]
+        id = int((line[0] * 3 + line[1]) * 20 + line[2] + 10)
+        heading[id] = lines[i]
+    
+    lines = [line.strip().split() for line in open(P_file, 'r').readlines()]
+    for i in range(0, 26):
+        if float(lines[i][-1]) >= SAMPLE_THRESHOLD:
+            pitch[i] = lines[i]
+        output.write(' '.join(pitch[i]) + '\n')
+    for i in range(26, len(lines)):
+        line = [float(v) for v in lines[i]]
+        if line[-1] >= SAMPLE_THRESHOLD:
+            id = int((line[0] * 3 + line[1]) * 20 + line[2] + 10)
+            heading[id] = lines[i]
+    for i in range(200):
+        if heading[i] != None:
+            output.write(' '.join(heading[i]) + '\n')
+    
+    os.remove(P_file)
+
 def test(user, session, is_P_model):
     if is_P_model:
         text_entry = entry.Entry(5000, entry.LanguageModel.USE_TRIGRAMS, user)
@@ -69,7 +103,7 @@ def test(user, session, is_P_model):
         tags = line.split()
         word = tags[0]
         word_session = int(tags[1])
-        is_test_data = word_session >= session
+        is_test_data = word_session < session
         length = len(word)
         task_word = tags[2]
         gram_1 = tags[3]
@@ -107,13 +141,18 @@ def test(user, session, is_P_model):
         print 'No test data'
 
 if __name__ == "__main__":
-    if (len(sys.argv) != 3):
-        print '[User and Session] required.'
+    if (len(sys.argv) < 2):
+        print '[User] required.'
         exit()
     user = sys.argv[1]
-    session = int(sys.argv[2])
+    if len(sys.argv) == 3:
+        session = int(sys.argv[2])
+    else:
+        session = 100
 
     train(user, session)
+
+    combine_GP(user)
     
     print '=== P Model ==='
     test(user, session, True)

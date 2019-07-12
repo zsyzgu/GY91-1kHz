@@ -105,7 +105,7 @@ def output_model(data, person = None):
     if person == None:
         output = file('touch_model.m', 'w')
     else:
-        output = file('./data-person/touch_model_' + person + '.m', 'w')
+        output = file('./data-person/person_model_' + person + '.m', 'w')
 
     for i in range(26):
         ch = chr(ord('a') + i)
@@ -126,7 +126,8 @@ def output_model(data, person = None):
             mean = np.mean(Y)
             std = np.std(Y)
         std = max(std, 0.05)
-        output.write(str(mean) + ' ' + str(std) + '\n')
+        samples = len(Y)
+        output.write(str(mean) + ' ' + str(std) + ' ' + str(samples) + '\n')
 
     for r0 in range(3):
         for r1 in range(3):
@@ -148,7 +149,8 @@ def output_model(data, person = None):
                     mean = np.mean(value)
                     std = np.std(value)
                     std = max(std, 0.05)
-                    output.write(str(r0) + ' ' + str(r1) + ' '  + str(key) + ' ' + str(mean) + ' ' + str(std) + '\n')
+                    samples = len(value)
+                    output.write(str(r0) + ' ' + str(r1) + ' '  + str(key) + ' ' + str(mean) + ' ' + str(std) + ' ' + str(samples) + '\n')
 
 def analyze_users(users):
     data = []
