@@ -7,11 +7,13 @@ class TouchModel:
     R1 = -0.81
     R2 = -1.03
 
-    pitch_data = []
-    heading_data = []
-
-    def __init__(self):
-        lines = [line.strip().split() for line in open('touch_model.m', 'r').readlines()]
+    def __init__(self, person = None):
+        self.pitch_data = []
+        self.heading_data = []
+        file = 'touch_model.m'
+        if person != None:
+            file = './data-person/touch_model_' + person + '.m'
+        lines = [line.strip().split() for line in open(file, 'r').readlines()]
         for i in range(0, 26):
             self.pitch_data.append([float(v) for v in lines[i]])
         self.heading_data = [None] * 200
@@ -55,11 +57,7 @@ class LanguageModel:
     USE_BIGRAMS = 1
     USE_TRIGRAMS = 2
 
-    word_number = 3000
-    trigrams_size = 0
-    LM = USE_UNITGRAM
-    words = []
-    word_ids = {}
+    '''
     unitgram = None
     bigrams = None
     trigrams = None
@@ -67,6 +65,7 @@ class LanguageModel:
     gram_2 = 0
     bigrams_data = None
     trigrams_data = None
+    '''
 
     def __init__(self, word_number = 3000, LM = USE_BIGRAMS):
         if word_number > 10000:
@@ -96,6 +95,7 @@ class LanguageModel:
         self.words = [str.lower(line.strip().split()[0]) for line in lines]
         self.unitgram = np.array([float(line.strip().split()[1]) for line in lines])
         self.unitgram /= sum(self.unitgram)
+        self.word_ids = {}
         self.word_ids['<S>'] = 0
         for i in range(len(self.words)):
             self.word_ids[self.words[i]] = i + 1
@@ -164,18 +164,15 @@ class LanguageModel:
 
 class Entry:
     MAX_CANDIDATES = 5
-    touch_model = None
-    language_model = None
-    words = []
     layout = {
         'q':(0.0, 0), 'w':(1.0, 0), 'e':(2.0, 0), 'r':(3.0, 0), 't':(4.0, 0), 'y':(5.0, 0), 'u':(6.0, 0), 'i':(7.0, 0), 'o':(8.0, 0), 'p':(9.0, 0),
         'a':(0.2, 1), 's':(1.2, 1), 'd':(2.2, 1), 'f':(3.2, 1), 'g':(4.2, 1), 'h':(5.2, 1), 'j':(6.2, 1), 'k':(7.2, 1), 'l':(8.2, 1),
         'z':(0.8, 2), 'x':(1.8, 2), 'c':(2.8, 2), 'v':(3.8, 2), 'b':(4.8, 2), 'n':(5.8, 2), 'm':(6.8, 2)
     }
 
-    def __init__(self, word_number = 3000, LM = LanguageModel.USE_BIGRAMS):
+    def __init__(self, word_number = 3000, LM = LanguageModel.USE_BIGRAMS, person = None):
         self.word_number = word_number
-        self.touch_model = TouchModel()
+        self.touch_model = TouchModel(person)
         self.language_model = LanguageModel(word_number, LM)
         self.words = self.language_model.words
 

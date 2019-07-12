@@ -101,8 +101,11 @@ def combine_data(X, Y):
     
     return X, Y
 
-def output_model(data):
-    output = file('touch_model.m', 'w')
+def output_model(data, person = None):
+    if person == None:
+        output = file('touch_model.m', 'w')
+    else:
+        output = file('./data-person/touch_model_' + person + '.m', 'w')
 
     for i in range(26):
         ch = chr(ord('a') + i)
@@ -122,9 +125,7 @@ def output_model(data):
         else:
             mean = np.mean(Y)
             std = np.std(Y)
-        if std < 0.001:
-            std = 0.05
-        #print mean, std
+        std = max(std, 0.05)
         output.write(str(mean) + ' ' + str(std) + '\n')
 
     for r0 in range(3):
@@ -146,9 +147,7 @@ def output_model(data):
                 if len(value) > 1:
                     mean = np.mean(value)
                     std = np.std(value)
-                    #print r0, r1, key, mean, std
-                    if std < 0.001:
-                        std = 0.05
+                    std = max(std, 0.05)
                     output.write(str(r0) + ' ' + str(r1) + ' '  + str(key) + ' ' + str(mean) + ' ' + str(std) + '\n')
 
 def analyze_users(users):
