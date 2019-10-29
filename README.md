@@ -89,31 +89,3 @@ python analyze_main.py your_name session_number
 
 It will print the analysis in terminal with WPM, CER and UER.
 
-## File Introduction
-
-```
-./arduino/ : arduino code that transmit IMU data from GY-91 with 1kHz
-./analyze_main.py : analyze typing data and calculate WPM, CER and UER
-./analyze_model.py : analyze Exp2 data and train general touch model
-./contact.py : detect contact event using IMU data
-./corpus.txt : corpus used by language model
-./entry.py : QWERTY entry using touch model and language model
-./event.py : detect touch event
-./log.py : log data during experiment
-./madgwickahrs.py : madgwickahrs algorithm to remove gravity in IMU data
-./main.py : main typing program
-./oscilloscope.py : drawing data
-./panel.py : typing entry UI
-./person_model.py : train personal touch model
-./person_simulation.py : simulate typing progress and analyze predict ranking
-./phrases-main.txt : phrases used in main.py
-./phrases.txt : phrases used in Exp2
-./prompt.mp3 : video that implies typing used in Exp2
-./quaternion.py : implement basic quaternion arithmetic
-./read_serial.py : read IMU data from serial
-./sample-contact.py : collect contact data to train contact model
-./sample-model.py : collect typing data to train touch model
-./simulation.py : simulate Exp2 progress to analyze touch model and language model
-./train.py : train contact model
-./utils.py : tool code to get users' name
-```
