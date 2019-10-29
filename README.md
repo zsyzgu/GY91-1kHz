@@ -1,8 +1,10 @@
-# Project Title
+# Ring Text Entry
 
-This project acquires data from an 6-axis IMU at 1 kHz and transfers the data to PC through USB cable.graph of project description goes here
+A word-level text entry using an IMUring worn on the middle phalanx of the index finger.
 
 ## Prerequisites
+
+You need a IMU ring, which is an accelerometer GY-91 attached to a regular finger ring. The ring is connected to an Arduino Uno R3 with Dupont lines. The ring collects 6-axis motion data including acceleration and angular velocity. The raw acceleration data is fused with gravity. We use Madgwick Filter to split the raw acceleration into true acceleration and gravity.
 
 Hardware platform:
 
@@ -10,35 +12,28 @@ Hardware platform:
 
 2. GY91 (including MPU9250)
 
-3. Ring(need photo)
+3. Ring
 
 Software environment:
 
 1. python 2.7.15
 
-2. numpy and some other dependencies
+2. numpy, pygame, keyboard and some other dependencies
 
 ## Running
 
 ### Arduino
 
-You need a GY-91 IMU, wiring with arduino board and your computer.  You can compile the code in **./arduino/** and upload it to the arduino with arduino IDE.
-
-### Touch Events
-
-To support typing entry, you need to detect touch events, like touch down, left slide and long press. We use machine learning to detect touch down event. 
-
-Using **./sample-contact.py**, you should contact your desk wearing the ring.
+You should connect GY-91 to Arduino as below.
 
 ```
-python sample-contact.py your_name positive_or_negative
+NCS - 5V
+SDO/SAO - Ground
+SDA - A5
+SCL - A4
 ```
 
-The contact data will save in **./data-contact/**. In **./train.py**, we extract features and use SVM to classify.
-
-```
-python train.py
-```
+Then you can compile the code in **./arduino/** and upload it to the arduino with arduino IDE.
 
 ### Typing
 
@@ -50,9 +45,7 @@ python main.py your_name session_number
 
 Then there will be a keyboard on your displayer and you can touch your desk wearing the ring. The program will detect the contact and give out its prediction. You can press your index finger on the desk for seconds to enter the selection mode. In this mode, you can slide your finger left or right to select the word you want to input and lift up. If you make a mistake, you can use left slide to delete the last thing you input.
 
-image here
-
-When you input a sentence, you can press 'Y' on your physical keyboard to type the next sentence. The program will end when you enter 10 sentences.
+When you input a sentence, you can press 'Y' on your physical keyboard to type the next sentence. Besides, you can press 'N' to re-type the sentence. The program will end when you enter 10 sentences.
 
 ### Training
 
@@ -109,7 +102,7 @@ It will print the analysis in terminal with WPM, CER and UER.
 ./log.py : log data during experiment
 ./madgwickahrs.py : madgwickahrs algorithm to remove gravity in IMU data
 ./main.py : main typing program
-./oscilloscope.py : ??
+./oscilloscope.py : drawing data
 ./panel.py : typing entry UI
 ./person_model.py : train personal touch model
 ./person_simulation.py : simulate typing progress and analyze predict ranking
