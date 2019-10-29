@@ -6,12 +6,16 @@ class Log:
     output = None
     timestamp = 0
 
-    def __init__(self):
-        root = './data-main/'
-        user = utils.get_users(root)[0]
-        file_name, trial = utils.get_next_file_name(root + user + '_')
-        print 'Block', trial, 'begin.'
-        self.output = open(file_name, 'w')
+    def __init__(self, rootdir=None, filename=None):
+        if rootdir == None and filename == None:
+            root = './data-main/'
+            user = utils.get_users(root)[0]
+            file_name, trial = utils.get_next_file_name(root + user + '_')
+            print 'Block', trial, 'begin.'
+            self.output = open(file_name, 'w')
+        else:
+            root = rootdir
+            self.output = open(filename, "w")
 
     def log_raw_data(self, data):
         self.timestamp = int(data[0])

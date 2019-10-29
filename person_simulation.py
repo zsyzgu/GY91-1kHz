@@ -28,6 +28,8 @@ def train(user, session):
                 tags = lines[i + 1 + j].split()
                 pitch = float(tags[0])
                 heading = float(tags[1])
+                # pitch = float(tags[1])
+                # heading = float(tags[2])
                 pitchs.append(pitch)
                 headings.append(heading)
             last_row = None
@@ -41,6 +43,7 @@ def train(user, session):
                 last_row = row
                 last_col = col
         i += length + 1
+        # i += length + 2
     data = np.array(data).reshape(-1, 6)
     analyze_model.output_model(data, user)
 
@@ -103,7 +106,8 @@ def test(user, session, is_P_model):
         tags = line.split()
         word = tags[0]
         word_session = int(tags[1])
-        is_test_data = word_session < session
+        # is_test_data = word_session < session
+        is_test_data = (session <= word_session and word_session < session + 3)
         length = len(word)
         task_word = tags[2]
         gram_1 = tags[3]
@@ -137,6 +141,7 @@ def test(user, session, is_P_model):
             result[i] = float(result[i]) / total
             output += ' ' + str(round(result[i] * 100, 2)) + '%'
         print output
+        return output
     else:
         print 'No test data'
 

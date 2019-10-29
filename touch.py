@@ -83,7 +83,7 @@ class TouchUp:
             self.count += 1
         else:
             self.count = 0
-        if self.count == 3:
+        if self.count == 10:
             return True
         else:
             return False

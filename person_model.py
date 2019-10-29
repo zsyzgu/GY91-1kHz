@@ -82,7 +82,7 @@ def analyze_session(file, session):
                         for letter_info in word_buffer:
                             output.write(letter_info + '\n')
 
-if __name__ == "__main__":
+if __name__ == "__main__":  
     root = './data-main/'
     if (len(sys.argv) != 2):
         print '[User] required.'

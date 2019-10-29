@@ -24,7 +24,6 @@ class Contact:
         if (len(self.data) >= self.length):
             self.data.pop(0)
         self.data.append(nine_axis)
-        return self.is_contact()
     
     def caln_sequence(self, X):
         X_std = np.std(X)

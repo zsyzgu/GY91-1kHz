@@ -166,8 +166,22 @@ def analyze_users(users):
 
     output_model(data)
 
+def analyze_personal_users(users):
+    for user in users:
+        print user
+        data = []
+        file_names = utils.get_all_file_name(root + user + '_')
+        user_data = []
+        for file_name in file_names:
+            user_data.extend(read_data(file_name))
+        user_data = remove_bad_data(user_data)
+        data.extend(user_data)
+        data = np.array(data).reshape(-1, 6)
+        output_model(data, user)
+
 if __name__ == "__main__":
     root = './data-model/'
     users = utils.get_users(root)
 
-    analyze_users(users)
+    #analyze_users(users)
+    analyze_personal_users(users)

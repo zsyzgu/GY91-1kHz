@@ -31,6 +31,9 @@ def clear():
     pan.update_visual_row(None)
 
 T = 0
+down_pitch = 0.0
+down_heading = 0.0
+
 while True:
     T += 1
     if T % 10 == 0 and (keyboard.is_pressed('q') or pan.phrase_cnt == 10):
@@ -55,7 +58,6 @@ while True:
     heading = data[11]
 
     curr_event = event.get_event(data)
-    
     if curr_event == event.SLIDE_LEFT: # Deletion
         if len(pitchs) == 0: # Delete a word
             pan.text_delete_word()
@@ -69,15 +71,19 @@ while True:
     
     if pan.selecting != None:
         pan.update_selection(heading, pitch)
-
+    
+    if curr_event == event.TOUCH_DOWN:
+        down_pitch = pitch
+        down_heading = heading
+    
     if curr_event == event.TOUCH_UP: # Confirm
         if pan.selecting == None: # Typing
-            # pan.update_visual_row(pitch) # Visual feedback
-            pitchs.append(pitch)
-            headings.append(heading)
+            # pan.update_visual_row(down_pitch) # Visual feedback
+            pitchs.append(down_pitch)
+            headings.append(down_heading)
             candidates = entry.predict(pitchs, headings)
             pan.update_candidates(candidates)
-            log.entry_a_letter(pitch, heading)
+            log.entry_a_letter(down_pitch, down_heading)
         else: # Selection
             word = pan.get_selecting_candidate()
             pan.text_add_word(word)

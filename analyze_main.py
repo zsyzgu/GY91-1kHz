@@ -1,5 +1,6 @@
 import utils
 import numpy as np
+import sys
 
 root = './data-main/'
 
@@ -8,7 +9,7 @@ def clac_uncorrected(A, B):
     m = len(B)
     F = np.zeros((n + 1) * (m + 1)).reshape(n + 1, m + 1)
     for i in range(1, n + 1):
-        for j in range(1, m + 1):
+        for j in range(i, m + 1):
             F[i, j] = max(F[i, j - 1], F[i - 1, j])
             if A[i - 1] == B[j - 1]:
                 F[i, j] = max(F[i, j], F[i - 1, j - 1] + 1)
@@ -93,13 +94,22 @@ def analyze_file(file):
     print 'WPM =', float(total_wpm_words) / (total_duration / 60)
     print 'CER =', float(total_CE) / total_words
     print 'UCER =', float(total_UCE) / total_words
+    return [float(total_wpm_words) / (total_duration / 60), float(total_CE) / total_words, float(total_UCE) / total_words]
 
-def analyze_user(user):
-    file_names = utils.get_all_file_name(root + user + '_')
+def analyze_user(user, session=-1):
+    if session == -1:
+        file_names = utils.get_all_file_name(root + user + '_')
+    else:
+        file_names = utils.get_index_file_name(root + user + '_', session)
     for file in file_names:
         print file
-        analyze_file(file)
+        return analyze_file(file)
+        # analyze_file(file)
 
-users = utils.get_users(root)
-for user in users:
-    analyze_user(user)
+if __name__ == "__main__":
+    users = utils.get_users(root)
+    session = -1
+    if len(sys.argv) == 3:
+        session = sys.argv[2]
+    for user in users:
+        analyze_user(user, session)
