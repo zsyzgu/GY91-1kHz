@@ -20,6 +20,8 @@ Software environment:
 
 2. numpy, pygame, keyboard and some other dependencies
 
+3. language model: We use Goolge Web 1T 5-gram and **./corpus.txt** to extract biagram and trigram. If you want to download our language models, click .
+
 ## Running
 
 ### Arduino
@@ -45,7 +47,7 @@ python main.py your_name session_number
 
 Then there will be a keyboard on your displayer and you can touch your desk wearing the ring. The program will detect the contact and give out its prediction. You can press your index finger on the desk for seconds to enter the selection mode. In this mode, you can slide your finger left or right to select the word you want to input and lift up. If you make a mistake, you can use left slide to delete the last thing you input.
 
-When you input a sentence, you can press 'Y' on your physical keyboard to type the next sentence. Besides, you can press 'N' to re-type the sentence. The program will end when you enter 10 sentences.
+When you input a sentence, you can press 'Y' on your physical keyboard to type the next sentence. Besides, you can press 'N' to re-type the sentence. The program will end after you finish the 10th sentence.
 
 ### Training
 
@@ -87,5 +89,4 @@ To find how fast you have typed, you can run **./analze_main.py**.
 python analyze_main.py your_name session_number
 ```
 
-It will print the analysis in terminal with WPM, CER and UER.
-
+It will print the analysis result(WPM, CER and UER) in terminal.
