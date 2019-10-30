@@ -25,14 +25,14 @@ def clear():
     global pitchs
     global headings
     global pan
+    global down_pitch
+    global down_heading
     pitchs = []
     headings = []
     pan.clear_candidates_bar()
     pan.update_visual_row(None)
 
 T = 0
-down_pitch = 0.0
-down_heading = 0.0
 
 while True:
     T += 1

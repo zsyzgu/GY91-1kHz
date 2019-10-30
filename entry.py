@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import scipy.io as io
+import time
 
 class TouchModel:
     R0 = -0.52
@@ -144,7 +145,8 @@ class LanguageModel:
             i = L
             
             total = 0
-            while i < np.size(self.trigrams_data, 0) and self.trigrams_data[i][0] == gram_id:
+            data_size = np.size(self.trigrams_data, 0)
+            while i < data_size and self.trigrams_data[i][0] == gram_id:
                 id = int(self.trigrams_data[i][1] - 1)
                 if id < self.word_number:
                     self.trigrams[id] = self.trigrams_data[i][2]
@@ -184,9 +186,11 @@ class Entry:
         self.language_model.prepare_bigrams()
         self.language_model.prepare_trigrams()
         scores = []
-        for i in range(len(self.words)):
+        pitchs_len = len(pitchs)
+        words_len = len(self.words)
+        for i in range(words_len):
             length = len(self.words[i])
-            if length != len(pitchs):
+            if length != pitchs_len:
                 scores.append(-1e6)
                 continue
             score = self.language_model.calc_score(i) + self.touch_model.calc_score(self.words[i], pitchs, headings)

@@ -4,7 +4,7 @@ import numpy as np
 import time
 
 class Event:
-    THRESHOLD_touch_down = 35 # duration between touch up judgement and touch down
+    THRESHOLD_touch_down = 5 # duration between touch up judgement and touch down
     THRESHOLD_touch_up = 15 # frames to confirm a touch up event
     THRESHOLD_long_press = 300 # duration between long press and touch down
     THRESHOLD_slide_distance = 0.1
@@ -40,7 +40,7 @@ class Event:
         is_slide = heading - self.queue[(self.queue_tot - duration) % self.queue_len] > self.THRESHOLD_slide_distance
         
         self.cont.update(nine_axis)
-        if not self.up_not_triggered and self.cont.is_contact():
+        if (not self.up_not_triggered) and self.cont.is_contact():
             self.last_tapping = timestamp
             self.count_down = self.THRESHOLD_touch_down
             curr_event = self.TOUCH_DOWN
@@ -53,14 +53,14 @@ class Event:
         
         self.touchup.update(data)
         if self.up_not_triggered:
-            
             # detect touch up event with machine learning
             if self.time_cnt == 1 and self.touchup.is_touchup(self.last_tapping):
                 curr_event = self.TOUCH_UP
+                if is_slide:
+                    curr_event = self.SLIDE_LEFT
                 self.up_not_triggered = False
                 self.long_press_not_triggered = False
             self.time_cnt = 1 - self.time_cnt
-
             # detect touch up event with rules
             '''
             up = nine_axis[3] * nine_axis[6] + nine_axis[4] * nine_axis[7] + nine_axis[5] * nine_axis[8]
@@ -76,11 +76,8 @@ class Event:
                 self.long_press_not_triggered = False
             '''
         if self.long_press_not_triggered and timestamp - self.last_tapping >= self.THRESHOLD_long_press * 1000:
-            if is_slide:
-                curr_event = self.SLIDE_LEFT
-                self.up_not_triggered = False
-            else:
+            if not is_slide:
                 curr_event = self.LONG_PRESS
-            self.long_press_not_triggered = False
+                self.long_press_not_triggered = False
         
         return curr_event
