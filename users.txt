@@ -1,0 +1,22 @@
+gyz p 19.63
+lzp g 14.57 2016011283 62wpm
+xjj g 9.81 2016011301 67wpm
+xt g 15.35 2016011294 52wpm
+syt p 8.39 2016011327 34wpm
+zzy g 12.37 63wpm
+lry g 10.29 44wpm
+xcy p 11.39 39wpm	
+ljs p 11.67 42wpm
+lmm g 8.57 2016011263 31wpm
+lw p 6.01 2017010814 28wpm
+lq g 7.54 2017010809 29wpm
+cwh p 9.25 2016012728
+zwx g 8.57
+wjs p 11.77 aaa
+lsm p 7.66 xxx
+
+yyy 400
+zzz 250
+
+p: 10.722 	8
+g: 10.883 	8

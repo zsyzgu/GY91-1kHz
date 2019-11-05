@@ -16,7 +16,7 @@ byte buf[17];
 int ledPin = 13;
 CapacitiveSensor cs_4_2 = CapacitiveSensor(4,2);
 void updateTouch() {
-  *is_touch - false;
+  *is_touch = false;
   return;
   long cap =  cs_4_2.capacitiveSensor(2);
   if (cap > 10) {

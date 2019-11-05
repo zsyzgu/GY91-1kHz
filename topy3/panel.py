@@ -111,7 +111,7 @@ class Panel:
     def show_keyboard(self):
         for i in range(26):
             ch = chr(i + ord('a'))
-            if ch in self.layout:
+            if self.layout.has_key(ch):
                 pos = self.layout[ch]
                 cv2.rectangle(self.image, (int(pos[0] * self.length), int((pos[1] + 2) * self.length)), (int((pos[0] + 1) * self.length), int((pos[1] + 3) * self.length)), (255, 255, 255), 1)
                 cv2.putText(self.image, str.upper(ch), (int(pos[0] * self.length) + 15, int((pos[1] + 3) * self.length) - 10), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)            

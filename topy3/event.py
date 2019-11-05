@@ -36,7 +36,7 @@ class Event:
 
         self.queue[self.queue_tot % self.queue_len] = heading
         self.queue_tot += 1
-        duration = int(timestamp - self.last_tapping) // 1000
+        duration = (timestamp - self.last_tapping) / 1000
         is_slide = heading - self.queue[(self.queue_tot - duration) % self.queue_len] > self.THRESHOLD_slide_distance
         
         self.cont.update(nine_axis)

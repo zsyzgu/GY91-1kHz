@@ -159,9 +159,9 @@ class LanguageModel:
     def update_grams(self, gram_1, gram_2):
         self.gram_1 = 0
         self.gram_2 = 0
-        if gram_1 != None and gram_1 in self.word_ids:
+        if gram_1 != None and self.word_ids.has_key(gram_1):
             self.gram_1 = self.word_ids[gram_1]
-        if gram_2 != None and gram_2 in self.word_ids:
+        if gram_2 != None and self.word_ids.has_key(gram_2):
             self.gram_2 = self.word_ids[gram_2]
 
 class Entry:
